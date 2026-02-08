@@ -18,16 +18,26 @@
 - name: Configure GNOME Interface
   command: "dconf write {{ item.key }} \"{{ item.value }}\""
   loop:
-    - { key: "/org/gnome/desktop/interface/gtk-theme", value: "'Orchis-Dark'" }
-    - { key: "/org/gnome/desktop/interface/icon-theme", value: "'Papirus-Dark'" }
-    - { key: "/org/gnome/desktop/interface/color-scheme", value: "'prefer-dark'" }
-    - { key: "/org/gnome/shell/extensions/user-theme/name", value: "'Orchis-Dark'" }
-    - { key: "/org/gnome/desktop/interface/font-name", value: "'Inter Regular 11'" }
-    - { key: "/org/gnome/desktop/interface/document-font-name", value: "'Inter Regular 11'" }
-    - { key: "/org/gnome/desktop/interface/monospace-font-name", value: "'Monospace 10'" }
-    - { key: "/org/gnome/desktop/wm/preferences/titlebar-font", value: "'Inter Bold 11'" }
-    - { key: "/org/gnome/desktop/interface/enable-animations", value: "true" }
-    - { key: "/org/gnome/mutter/center-new-windows", value: "true" }
+    - key: "/org/gnome/desktop/interface/gtk-theme"
+      value: "'Orchis-Dark'"
+    - key: "/org/gnome/desktop/interface/icon-theme"
+      value: "'Papirus-Dark'"
+    - key: "/org/gnome/desktop/interface/color-scheme"
+      value: "'prefer-dark'"
+    - key: "/org/gnome/shell/extensions/user-theme/name"
+      value: "'Orchis-Dark'"
+    - key: "/org/gnome/desktop/interface/font-name"
+      value: "'Inter Regular 11'"
+    - key: "/org/gnome/desktop/interface/document-font-name"
+      value: "'Inter Regular 11'"
+    - key: "/org/gnome/desktop/interface/monospace-font-name"
+      value: "'Monospace 10'"
+    - key: "/org/gnome/desktop/wm/preferences/titlebar-font"
+      value: "'Inter Bold 11'"
+    - key: "/org/gnome/desktop/interface/enable-animations"
+      value: "true"
+    - key: "/org/gnome/mutter/center-new-windows"
+      value: "true"
   changed_when: true
 
 - name: Flatpak Overrides
