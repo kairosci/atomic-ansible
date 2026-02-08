@@ -1,0 +1,55 @@
+---
+- name: Reset Home Directory
+  hosts: localhost
+  connection: local
+  vars:
+    user_home: "{{ lookup('env', 'HOME') }}"
+    ansible_date_time_formatted: "{{ lookup('pipe', 'date +%Y%m%d_%H%M%S') }}"
+    backup_path: "{{ user_home }}/config_backup_{{ ansible_date_time_formatted }}"
+    whitelist:
+      - .ssh
+      - .gnupg
+      - .gitconfig
+      - .zshrc
+      - .pki
+      - .local
+      - .mozilla
+  tasks:
+    - name: Fail if confirmation is not provided
+      fail:
+        msg: "You must provide -e confirm=yes to run this playbook."
+      when: confirm | default(false) | bool == false
+
+    - name: Create backup directory
+      file:
+        path: "{{ backup_path }}"
+        state: directory
+        mode: '0755'
+
+    - name: Perform reset via shell (Ansible module is too slow for mass cleanup)
+      shell: |
+        backup_dir="{{ backup_path }}"
+        user_home="{{ user_home }}"
+        whitelist_pattern="^(\.ssh|\.gnupg|\.gitconfig|\.zshrc|\.pki|\.local|\.mozilla)$"
+
+        for item in "$user_home"/.*; do
+            basename="${item##*/}"
+            [[ "$basename" == "." || "$basename" == ".." ]] && continue
+
+            if [[ "$basename" =~ $whitelist_pattern ]]; then
+                if [[ "$basename" == ".local" ]]; then
+                    cp -r "$item" "$backup_dir/" 2>/dev/null || true
+                    for sub in "$item"/*; do
+                        subname="${sub##*/}"
+                        [[ "$subname" == "bin" ]] && continue
+                        rm -rf "$sub"
+                    done
+                fi
+                continue
+            fi
+
+            cp -r "$item" "$backup_dir/" 2>/dev/null || true
+            rm -rf "$item"
+        done
+      args:
+        executable: /bin/bash

@@ -1,0 +1,35 @@
+---
+- name: Folder Protection
+  hosts: localhost
+  connection: local
+  vars:
+    user_home: "{{ lookup('env', 'HOME') }}"
+    protected_folders:
+      - Desktop
+      - Documents
+      - Pictures
+      - Videos
+  tasks:
+    - name: Set immutable flag
+      command: "chattr +i {{ user_home }}/{{ item }}"
+      become: true
+      loop: "{{ protected_folders }}"
+      when: action == 'set'
+
+    - name: Unset immutable flag
+      command: "chattr -i {{ user_home }}/{{ item }}"
+      become: true
+      loop: "{{ protected_folders }}"
+      when: action == 'unset'
+
+    - name: Create state file
+      file:
+        path: "{{ user_home }}/.state_protected"
+        state: touch
+      when: action == 'set'
+
+    - name: Remove state file
+      file:
+        path: "{{ user_home }}/.state_protected"
+        state: absent
+      when: action == 'unset'

@@ -1,71 +1,69 @@
-# Atomic Manager (v2.1)
+# Atomic Ansible (v3.0)
 
-Configuration scripts for **Fedora Kionite** (KDE) and **Fedora Silverblue** (GNOME) with automatic distro detection.
+A powerful, **root-less** configuration management system for **Fedora Silverblue** (GNOME) and **Fedora Kinoite** (KDE), powered by Ansible.
 
-## Features
+> [!IMPORTANT]
+> **v3.0 is a complete rewrite.** We have migrated from shell scripts to a pure Ansible architecture. The system now runs entirely as a local user, requiring zero `sudo` privileges for configuration.
 
-## Features
+## Key Features
 
-Atomic Manager automatically detects your distribution (**Fedora Silverblue** or **Fedora Kionite**) and applies the appropriate configuration.
+- **Zero-Sudo Architecture**: All configurations happen in the user space (dotfiles, themes, fonts, Flatpaks).
+- **Automatic Multi-Distro Support**: Detects if you are on Silverblue or Kinoite and applies the correct environment.
+- **Minimalist CLI**: Optimized output using the `unixy` callback for a clean, distraction-free experience.
+- **Toolbox Sync**: Automatically synchronizes your host theme, icons, and fonts to all your Toolbox containers.
+- **Safe Maintenance**: Integrated Flatpak updates and home directory reset utilities.
 
-### Core Configuration
+## Requirements
 
-- **Automatic Detection**: Adapts scripts based on the running OS (GNOME vs KDE).
-- **Zsh Environment**: Sets up Zsh with Oh My Zsh for a superior shell experience.
-- **System Optimization**: Configures kernel parameters, services, and TLP for battery life.
-- **Deep Clean**: Utilities to reset user configuration and clean up the home directory.
+- **Fedora Atomic** (Silverblue or Kinoite)
+- **Ansible** installed in your user environment or a venv.
 
-### Applications & Development
-
-- **Toolbox Integration**: Sets up a Fedora-based `toolbox` container for development (Node.js, dev tools), keeping the base system clean.
-- **Browsers**: Installs Brave Browser.
-- **Flatpak Management**: Installs curated Flatpak apps (Discord, etc.) and applies overrides (Papirus Icons).
-- **Virtualization**: Sets up libvirt/QEMU for VM management.
-
-### Desktop Enhancements
-
-- **GNOME Extensions** (Silverblue): Configures Dash to Dock, AppIndicator, Blur my Shell, Just Perfection, and Caffeine.
-- **Bloatware Removal**: Removes unnecessary pre-installed applications for a slimmer system.
-
-## Installation
+## Quick Start
 
 ```bash
-git clone https://github.com/redigere/atomic.git
-cd atomic
-sudo ./setup.sh
+git clone https://github.com/kairosci/atomic-ansible.git
+cd atomic-ansible
+
+# Run the full setup (Automatic detection)
+make setup
+
+# Or run specific desktop configurations
+make silverblue
+make kinoite
 ```
 
-Restart terminal, then:
+## Available Commands
 
-```bash
-sudo atomic
-```
+| Command | Description |
+|---------|-------------|
+| `make setup` | Detects distro and applies full configuration |
+| `make update` | Updates user-level Flatpaks and cleans up |
+| `make reset-home` | Resets dotfiles (with confirmation) |
+| `make VERBOSE="-v"` | Run any command with Ansible verbosity |
 
 ## Structure
 
 ```text
-├── index.sh                # Interactive menu
-├── lib/common.sh           # Shared utilities
-├── config/
-│   ├── index.sh            # Main config entry
-│   └── script/
-│       ├── kionite/        # KDE specific
-│       ├── silverblue/     # GNOME specific
-│       └── *.sh            # Common scripts
-└── utils/                  # Utility scripts
+.
+├── Makefile                # Main entry point
+├── ansible.cfg             # Optimized Ansible settings
+├── ansible/
+│   ├── playbooks/          # Main orchestration files
+│   └── roles/              # Specialized kebab-case roles
+│       ├── system-config   # Dotfiles and aliases
+│       ├── package-config  # Flatpak remotes
+│       ├── toolbox-config  # Theme synchronization
+│       ├── gnome-*        # GNOME specific theme/ext
+│       └── kde-*          # KDE specific theme/config
 ```
 
-## GNOME Extensions (Silverblue)
+## Performance & Debugging
 
-- **Dash to Dock** — Bottom dock
-- **AppIndicator** — Tray icons
-- **Blur my Shell** — Blur effects
-- **Just Perfection** — Fast animations
-- **Caffeine** — Prevent suspend
+Atomic Ansible v3.0 uses the `unixy` output plugin to eliminate the "stars" and noise of standard Ansible. For deep debugging, use the verbosity flag:
 
-## Notes
-
-- Development tools should be installed in **Toolbox**, not on the immutable base system.
+```bash
+make setup VERBOSE="-vvv"
+```
 
 ## License
 
