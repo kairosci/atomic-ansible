@@ -67,4 +67,4 @@ make setup VERBOSE="-vvv"
 
 ## License
 
-MIT
+Apache License 2.0
