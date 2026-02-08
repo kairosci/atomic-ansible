@@ -1,0 +1,13 @@
+---
+- name: Optimize User Environment
+  block:
+    - name: Configure Safe Delete Aliases
+      lineinfile:
+        path: "{{ ansible_user_dir }}/.zshrc"
+        line: "{{ item }}"
+        create: yes
+        state: present
+      loop:
+        - "# Safe Delete Configuration"
+        - "alias rm='gio trash 2>/dev/null || /usr/bin/rm'"
+        - "alias rp='/usr/bin/rm'"

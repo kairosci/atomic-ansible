@@ -1,5 +1,6 @@
 ---
 - name: Hide GRUB Menu
+  become: true
   block:
     - name: Set GRUB timeout to 0
       replace:
@@ -16,6 +17,7 @@
       when: grub_config.changed
 
 - name: Rename BTRFS labels to 'fedora'
+  become: true
   command: btrfs filesystem label {{ item.path }} fedora
   loop:
     - { path: '/var' }
@@ -24,6 +26,7 @@
   changed_when: false
 
 - name: Optimize GNOME Services
+  become: true
   block:
     - name: Disable unnecessary services
       systemd:
@@ -49,6 +52,7 @@
       ignore_errors: yes
 
 - name: Apply Kernel Optimizations (sysctl)
+  become: true
   copy:
     dest: /etc/sysctl.d/99-performance.conf
     content: |
@@ -66,6 +70,7 @@
   register: sysctl_p
 
 - name: Reload sysctl
+  become: true
   command: sysctl --system
   when: sysctl_p.changed
 

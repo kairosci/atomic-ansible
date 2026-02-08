@@ -47,9 +47,3 @@
           alias ...='cd ../..'
           alias .3='cd ../../..'
           alias .4='cd ../../../..'
-
-- name: Change default shell to zsh
-  user:
-    name: "{{ ansible_user_id }}"
-    shell: /usr/bin/zsh
-  become: yes

@@ -5,12 +5,14 @@
   gather_facts: yes
   vars:
     ansible_python_interpreter: /usr/bin/python3
+    user_home: "{{ lookup('env', 'HOME') }}"
 
   roles:
     - common
-    - system_config
-    - package_config
-    - shell_config
-    - apps_config
-    - kde_theme
-    - kde_config
+    - system-config
+    - package-config
+    - shell-config
+    - apps-config
+    - kde-theme
+    - kde-config
+    - toolbox-config

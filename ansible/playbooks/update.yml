@@ -1,0 +1,13 @@
+---
+- name: Flatpak Update and Cleanup
+  hosts: localhost
+  connection: local
+  tasks:
+    - name: Update Flatpaks
+      command: flatpak update -y
+      register: flatpak_update
+      changed_when: "'Nothing to do' not in flatpak_update.stdout"
+
+    - name: Cleanup unused Flatpaks
+      command: flatpak uninstall --unused --delete-data -y
+      ignore_errors: true
