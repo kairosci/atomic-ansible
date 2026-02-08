@@ -47,9 +47,9 @@
     - { key: "/org/gnome/shell/extensions/dash-to-dock/extend-height", value: "false" }
     - { key: "/org/gnome/shell/extensions/dash-to-dock/intellihide-mode", value: "'ALL_WINDOWS'" }
     - { key: "/org/gnome/shell/extensions/dash-to-dock/autohide-in-fullscreen", value: "true" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/custom-theme-shrink", value: "false" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/transparency-mode", value: "'FIXED'" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/background-opacity", value: "0.2" }
+    - { key: "/org/gnome/shell/extensions/dash-to-dock/custom-theme-shrink", value: "true" }
+    - { key: "/org/gnome/shell/extensions/dash-to-dock/transparency-mode", value: "'DYNAMIC'" }
+    - { key: "/org/gnome/shell/extensions/dash-to-dock/background-opacity", value: "0.4" }
     - { key: "/org/gnome/shell/extensions/dash-to-dock/show-trash", value: "false" }
     - { key: "/org/gnome/shell/extensions/dash-to-dock/show-mounts", value: "false" }
     - { key: "/org/gnome/shell/extensions/dash-to-dock/animation-time", value: "0.25" }
