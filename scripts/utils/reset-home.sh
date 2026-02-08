@@ -1,0 +1,87 @@
+#!/usr/bin/env zsh
+# @file reset-home.sh
+# @brief Resets user home directory
+# @description
+#   Aggressively cleans the home directory, preserving only
+#   essential configurations (.ssh, .gnupg, .gitconfig, etc.).
+
+set -euo pipefail
+
+readonly SCRIPT_FILE="${0:A}"
+readonly SCRIPT_DIR="${SCRIPT_FILE:h}"
+source "$SCRIPT_DIR/../../lib/common.sh"
+
+# @description Resets home directory, preserving essential configs.
+reset-home() {
+    local user_home
+    user_home="$(get-user-home)"
+
+    log-warn "This will DELETE almost all hidden configuration files in $user_home."
+    log-warn "Only the following will be preserved:"
+    echo "  - .ssh/"
+    echo "  - .gnupg/"
+    echo "  - .gitconfig"
+    echo "  - .zshrc"
+    echo "  - .pki/"
+    echo "  - .local/bin/"
+
+    if ! confirm "Are you ABSOLUTELY sure you want to proceed?"; then
+        log-info "Reset cancelled."
+        return 0
+    fi
+
+    local timestamp backup_dir whitelist_pattern
+    timestamp="$(date +%Y%m%d_%H%M%S)"
+    backup_dir="$user_home/config_backup_$timestamp"
+    whitelist_pattern="^(\.ssh|\.gnupg|\.gitconfig|\.zshrc|\.pki|\.local|\.mozilla)$"
+
+    log-info "Creating safety backup at $backup_dir (just in case)..."
+    mkdir -p "$backup_dir"
+
+    setopt DOT_GLOB
+
+    for item in "$user_home"/.*; do
+        local basename="${item##*/}"
+
+        [[ "$basename" == "." || "$basename" == ".." ]] && continue
+
+        if [[ "$basename" =~ $whitelist_pattern ]]; then
+            log-info "Preserving: $basename"
+
+            if [[ "$basename" == ".local" ]]; then
+                log-info "Cleaning .local..."
+                if ! cp -r "$item" "$backup_dir/" 2>/dev/null; then
+                    log-warn "Failed to backup .local to $backup_dir"
+                fi
+
+                for sub in "$item"/*; do
+                    local subname="${sub##*/}"
+                    if [[ "$subname" != "bin" ]]; then
+                        rm -rf "$sub"
+                        echo "Deleted: .local/$subname"
+                    fi
+                done
+            fi
+            continue
+        fi
+
+        if ! cp -r "$item" "$backup_dir/" 2>/dev/null; then
+            log-warn "Failed to backup $item to $backup_dir"
+        fi
+        rm -rf "$item"
+        echo "Deleted: $basename"
+    done
+
+    unsetopt DOT_GLOB
+
+    log-success "Home directory reset completed."
+    log-info "Backup stored at: $backup_dir"
+}
+
+# @description Main entry point.
+main() {
+    ensure-user
+    reset-home
+}
+
+main "$@"
