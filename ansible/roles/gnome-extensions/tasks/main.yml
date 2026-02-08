@@ -41,39 +41,63 @@
 - name: Configure Dash to Dock
   command: "dconf write {{ item.key }} \"{{ item.value }}\""
   loop:
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/dock-position", value: "'BOTTOM'" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/dash-max-icon-size", value: "48" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/dock-fixed", value: "false" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/extend-height", value: "false" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/intellihide-mode", value: "'ALL_WINDOWS'" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/autohide-in-fullscreen", value: "true" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/custom-theme-shrink", value: "false" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/transparency-mode", value: "'FIXED'" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/background-opacity", value: "0.2" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/show-trash", value: "false" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/show-mounts", value: "false" }
-    - { key: "/org/gnome/shell/extensions/dash-to-dock/animation-time", value: "0.25" }
+    - key: "/org/gnome/shell/extensions/dash-to-dock/dock-position"
+      value: "'BOTTOM'"
+    - key: "/org/gnome/shell/extensions/dash-to-dock/dash-max-icon-size"
+      value: "48"
+    - key: "/org/gnome/shell/extensions/dash-to-dock/dock-fixed"
+      value: "false"
+    - key: "/org/gnome/shell/extensions/dash-to-dock/extend-height"
+      value: "false"
+    - key: "/org/gnome/shell/extensions/dash-to-dock/intellihide-mode"
+      value: "'ALL_WINDOWS'"
+    - key: "/org/gnome/shell/extensions/dash-to-dock/autohide-in-fullscreen"
+      value: "true"
+    - key: "/org/gnome/shell/extensions/dash-to-dock/custom-theme-shrink"
+      value: "false"
+    - key: "/org/gnome/shell/extensions/dash-to-dock/transparency-mode"
+      value: "'FIXED'"
+    - key: "/org/gnome/shell/extensions/dash-to-dock/background-opacity"
+      value: "0.2"
+    - key: "/org/gnome/shell/extensions/dash-to-dock/show-trash"
+      value: "false"
+    - key: "/org/gnome/shell/extensions/dash-to-dock/show-mounts"
+      value: "false"
+    - key: "/org/gnome/shell/extensions/dash-to-dock/animation-time"
+      value: "0.25"
   changed_when: true
 
 - name: Configure Just Perfection
   command: "dconf write {{ item.key }} \"{{ item.value }}\""
   loop:
-    - { key: "/org/gnome/shell/extensions/just-perfection/search", value: "false" }
-    - { key: "/org/gnome/shell/extensions/just-perfection/workspace", value: "true" }
-    - { key: "/org/gnome/shell/extensions/just-perfection/animation", value: "4" }
-    - { key: "/org/gnome/shell/extensions/just-perfection/workspace-background-corner-size", value: "1" }
+    - key: "/org/gnome/shell/extensions/just-perfection/search"
+      value: "false"
+    - key: "/org/gnome/shell/extensions/just-perfection/workspace"
+      value: "true"
+    - key: "/org/gnome/shell/extensions/just-perfection/animation"
+      value: "4"
+    - key: "/org/gnome/shell/extensions/just-perfection/workspace-background-corner-size"
+      value: "1"
   changed_when: true
     # Panel corner size intentionally left to default (Orchis theme)
 
 - name: Configure Blur My Shell
   command: "dconf write {{ item.key }} \"{{ item.value }}\""
   loop:
-    - { key: "/org/gnome/shell/extensions/blur-my-shell/brightness", value: "0.6" }
-    - { key: "/org/gnome/shell/extensions/blur-my-shell/sigma", value: "30" }
-    - { key: "/org/gnome/shell/extensions/blur-my-shell/noise-amount", value: "0.05" }
-    - { key: "/org/gnome/shell/extensions/blur-my-shell/panel/blur", value: "true" }
-    - { key: "/org/gnome/shell/extensions/blur-my-shell/panel/pipeline", value: "'pipeline_default'" }
-    - { key: "/org/gnome/shell/extensions/blur-my-shell/appfolder/blur", value: "true" }
-    - { key: "/org/gnome/shell/extensions/blur-my-shell/dash-to-dock/blur", value: "true" }
-    - { key: "/org/gnome/shell/extensions/blur-my-shell/overview/blur", value: "true" }
+    - key: "/org/gnome/shell/extensions/blur-my-shell/brightness"
+      value: "0.6"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/sigma"
+      value: "30"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/noise-amount"
+      value: "0.05"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/panel/blur"
+      value: "true"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/panel/pipeline"
+      value: "'pipeline_default'"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/appfolder/blur"
+      value: "true"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/dash-to-dock/blur"
+      value: "true"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/overview/blur"
+      value: "true"
   changed_when: true

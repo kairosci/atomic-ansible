@@ -20,8 +20,8 @@
   become: true
   command: btrfs filesystem label {{ item.path }} fedora
   loop:
-    - { path: '/var' }
-    - { path: '/var/home' }
+    - path: '/var'
+    - path: '/var/home'
   ignore_errors: yes
   changed_when: false
 
