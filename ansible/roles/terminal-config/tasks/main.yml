@@ -1,0 +1,13 @@
+---
+- name: Set Default Terminal Emulator (GNOME Console/Ptyxis)
+  command: "dconf write {{ item.key }} \"{{ item.value }}\""
+  loop:
+    - { key: "/org/gnome/desktop/default-applications/terminal/exec", value: "'kgx'" }
+    - { key: "/org/gnome/desktop/default-applications/terminal/exec-arg", value: "'-x'" }
+  changed_when: true
+  ignore_errors: yes
+
+- name: Fallback to Ptyxis if kgx is not used
+  command: "dconf write /org/gnome/desktop/default-applications/terminal/exec \"'ptyxis'\""
+  when: false # Adjust if ptyxis is preferred or detected
+  ignore_errors: yes
