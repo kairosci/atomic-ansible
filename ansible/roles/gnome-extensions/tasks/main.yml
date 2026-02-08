@@ -35,14 +35,11 @@
   changed_when: "'is already enabled' not in ext_enable.stdout"
 
 - name: Enable User Extensions Generic Setting
-  dconf:
-    key: "/org/gnome/shell/disable-user-extensions"
-    value: "false"
+  command: "dconf write /org/gnome/shell/disable-user-extensions false"
+  changed_when: true
 
 - name: Configure Dash to Dock
-  dconf:
-    key: "{{ item.key }}"
-    value: "{{ item.value }}"
+  command: "dconf write {{ item.key }} \"{{ item.value }}\""
   loop:
     - { key: "/org/gnome/shell/extensions/dash-to-dock/dock-position", value: "'BOTTOM'" }
     - { key: "/org/gnome/shell/extensions/dash-to-dock/dash-max-icon-size", value: "48" }
@@ -56,22 +53,20 @@
     - { key: "/org/gnome/shell/extensions/dash-to-dock/show-trash", value: "false" }
     - { key: "/org/gnome/shell/extensions/dash-to-dock/show-mounts", value: "false" }
     - { key: "/org/gnome/shell/extensions/dash-to-dock/animation-time", value: "0.25" }
+  changed_when: true
 
 - name: Configure Just Perfection
-  dconf:
-    key: "{{ item.key }}"
-    value: "{{ item.value }}"
+  command: "dconf write {{ item.key }} \"{{ item.value }}\""
   loop:
     - { key: "/org/gnome/shell/extensions/just-perfection/search", value: "false" }
     - { key: "/org/gnome/shell/extensions/just-perfection/workspace", value: "true" }
     - { key: "/org/gnome/shell/extensions/just-perfection/animation", value: "4" }
     - { key: "/org/gnome/shell/extensions/just-perfection/workspace-background-corner-size", value: "1" }
+  changed_when: true
     # Panel corner size intentionally left to default (Orchis theme)
 
 - name: Configure Blur My Shell
-  dconf:
-    key: "{{ item.key }}"
-    value: "{{ item.value }}"
+  command: "dconf write {{ item.key }} \"{{ item.value }}\""
   loop:
     - { key: "/org/gnome/shell/extensions/blur-my-shell/brightness", value: "0.6" }
     - { key: "/org/gnome/shell/extensions/blur-my-shell/sigma", value: "30" }
@@ -81,3 +76,4 @@
     - { key: "/org/gnome/shell/extensions/blur-my-shell/appfolder/blur", value: "true" }
     - { key: "/org/gnome/shell/extensions/blur-my-shell/dash-to-dock/blur", value: "true" }
     - { key: "/org/gnome/shell/extensions/blur-my-shell/overview/blur", value: "true" }
+  changed_when: true

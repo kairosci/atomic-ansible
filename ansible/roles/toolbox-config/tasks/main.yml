@@ -1,0 +1,23 @@
+---
+- name: Sync Host Theme to Toolbox Containers
+  block:
+    - name: Get list of Toolbox containers
+      shell: "toolbox list --containers | tail -n +2 | awk '{print $2}'"
+      register: toolbox_containers
+      changed_when: false
+      failed_when: false
+
+    - name: Sync theme to each container
+      shell: |
+        if toolbox run --container {{ item }} command -v dconf >/dev/null 2>&1; then
+          toolbox run --container {{ item }} dconf write /org/gnome/desktop/interface/gtk-theme "'Orchis-Dark'"
+          toolbox run --container {{ item }} dconf write /org/gnome/desktop/interface/icon-theme "'Papirus-Dark'"
+          toolbox run --container {{ item }} dconf write /org/gnome/desktop/interface/color-scheme "'prefer-dark'"
+          toolbox run --container {{ item }} dconf write /org/gnome/desktop/interface/font-name "'Inter Regular 11'"
+          toolbox run --container {{ item }} dconf write /org/gnome/desktop/interface/document-font-name "'Inter Regular 11'"
+          toolbox run --container {{ item }} dconf write /org/gnome/desktop/interface/monospace-font-name "'Monospace 10'"
+        fi
+      loop: "{{ toolbox_containers.stdout_lines }}"
+      when: toolbox_containers.stdout_lines | length > 0
+      changed_when: true
+      ignore_errors: yes

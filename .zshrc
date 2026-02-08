@@ -1,1 +1,0 @@
-alias antigravity=toolbox run -c dev antigravity .
