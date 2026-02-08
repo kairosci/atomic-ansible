@@ -1,0 +1,23 @@
+---
+- name: RPM-OSTree Cleanup
+  command: rpm-ostree cleanup -m
+  become: true
+  changed_when: true
+  ignore_errors: yes
+
+- name: Flatpak Cleanup
+  command: flatpak uninstall --unused -y
+  become: true
+  changed_when: true
+  ignore_errors: yes
+
+- name: Podman System Prune
+  command: podman system prune -f
+  changed_when: true
+  ignore_errors: yes
+
+- name: Vacuum Journal Logs
+  command: journalctl --vacuum-time=7d
+  become: true
+  changed_when: true
+  ignore_errors: yes
