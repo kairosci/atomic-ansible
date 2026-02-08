@@ -21,3 +21,23 @@
   become: true
   changed_when: true
   ignore_errors: yes
+
+- name: Clean /root directory
+  become: true
+  block:
+    - name: Remove .ansible folder in /root
+      file:
+        path: /root/.ansible
+        state: absent
+
+    - name: Remove temporary scripts in /root
+      shell: "rm -f /root/*.sh /root/*.py"
+      args:
+        warn: false
+      ignore_errors: yes
+
+    - name: Remove thumbnail cache in /root
+      file:
+        path: /root/.cache/thumbnails
+        state: absent
+      ignore_errors: yes
