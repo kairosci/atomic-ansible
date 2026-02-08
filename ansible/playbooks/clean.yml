@@ -1,0 +1,10 @@
+---
+- name: OS and Root Cleanup
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+
+  roles:
+    - system-cleanup
