@@ -1,0 +1,28 @@
+---
+- name: AI Toolbox Container Management
+  block:
+    - name: Check if 'ai' container exists
+      shell: "toolbox list --containers | grep -p '\\bai\\b'"
+      register: ai_container_exists
+      changed_when: false
+      failed_when: false
+
+    - name: Create 'ai' container
+      command: "toolbox create -y ai"
+      when: ai_container_exists.rc != 0
+
+    - name: Check if Ollama is installed in 'ai' container
+      shell: "toolbox run --container ai command -v ollama"
+      register: ollama_installed
+      changed_when: false
+      failed_when: false
+
+    - name: Install Ollama in 'ai' container
+      shell: "toolbox run --container ai sh -c 'curl -fsSL https://ollama.com/install.sh | sh'"
+      when: ollama_installed.rc != 0
+      changed_when: true
+
+    - name: Pull lightweight model (phi3)
+      shell: "toolbox run --container ai ollama pull phi3"
+      register: model_pull
+      changed_when: "'pulling' in model_pull.stdout"
