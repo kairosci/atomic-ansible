@@ -106,4 +106,12 @@
       value: "true"
     - key: "/org/gnome/shell/extensions/blur-my-shell/overview/blur"
       value: "true"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/panel/customize"
+      value: "true"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/panel/override-background-color"
+      value: "true"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/panel/background-color"
+      value: "(0.0, 0.0, 0.0, 0.0)"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/panel/unblur-in-overview"
+      value: "false"
   changed_when: true
