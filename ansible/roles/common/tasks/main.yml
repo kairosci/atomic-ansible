@@ -18,6 +18,13 @@
         dest: "/tmp/Inter-4.0.zip"
       register: download_font
 
+    - name: Create Inter font directory
+      file:
+        path: "{{ ansible_user_dir }}/.local/share/fonts/Inter"
+        state: directory
+        mode: '0755'
+      when: download_font.changed
+
     - name: Extract Inter font
       unarchive:
         src: "/tmp/Inter-4.0.zip"

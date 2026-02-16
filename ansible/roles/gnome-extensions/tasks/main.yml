@@ -1,17 +1,23 @@
 ---
-- name: Ensure pip is installed
-  command: python3 -m ensurepip --user --default-pip
-  args:
-    creates: "{{ ansible_user_dir }}/.local/bin/pip"
+- name: Determine Project Root for Venv
+  set_fact:
+    project_venv: "{{ playbook_dir }}/../../.venv"
 
-- name: Install gnome-extensions-cli
+- name: Remove existing virtual environment
+  file:
+    path: "{{ project_venv }}"
+    state: absent
+
+- name: Create local virtual environment
+  command: python3 -m venv {{ project_venv }}
+
+- name: Install gnome-extensions-cli in venv
   pip:
     name: gnome-extensions-cli
-    executable: "{{ ansible_user_dir }}/.local/bin/pip"
-    extra_args: "--user"
+    virtualenv: "{{ project_venv }}"
 
 - name: Install GNOME Extensions
-  command: "{{ ansible_user_dir }}/.local/bin/gnome-extensions-cli install {{ item }}"
+  command: "{{ project_venv }}/bin/gnome-extensions-cli install {{ item }}"
   loop:
     - "appindicatorsupport@rgcjonas.gmail.com"
     - "dash-to-dock@micxgx.gmail.com"
@@ -23,7 +29,7 @@
   changed_when: "'already installed' not in ext_install.stdout"
 
 - name: Enable GNOME Extensions
-  command: "{{ ansible_user_dir }}/.local/bin/gnome-extensions-cli enable {{ item }}"
+  command: "{{ project_venv }}/bin/gnome-extensions-cli enable {{ item }}"
   loop:
     - "appindicatorsupport@rgcjonas.gmail.com"
     - "dash-to-dock@micxgx.gmail.com"
