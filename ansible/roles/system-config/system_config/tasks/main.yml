@@ -56,10 +56,13 @@
   copy:
     dest: /etc/sysctl.d/99-performance.conf
     content: |
-      vm.swappiness=100
-      vm.vfs_cache_pressure=50
-      vm.dirty_ratio=15
+      vm.swappiness=10
+      vm.vfs_cache_pressure=200
+      vm.dirty_ratio=10
       vm.dirty_background_ratio=5
+      vm.overcommit_memory=2
+      vm.overcommit_ratio=50
+      vm.admin_reserve_kbytes=262144
       net.core.rmem_max=16777216
       net.core.wmem_max=16777216
       net.ipv4.tcp_fastopen=3
