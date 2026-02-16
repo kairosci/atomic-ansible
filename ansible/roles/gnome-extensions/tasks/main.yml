@@ -3,10 +3,13 @@
   set_fact:
     project_venv: "{{ playbook_dir }}/../../.venv"
 
+- name: Remove existing virtual environment
+  file:
+    path: "{{ project_venv }}"
+    state: absent
+
 - name: Create local virtual environment
   command: python3 -m venv {{ project_venv }}
-  args:
-    creates: "{{ project_venv }}/bin/python"
 
 - name: Install gnome-extensions-cli in venv
   pip:
