@@ -11,20 +11,31 @@
         - "# Safe Delete Configuration"
         - "alias rm='gio trash 2>/dev/null || /usr/bin/rm'"
         - "alias rp='/usr/bin/rm'"
+- name: Environment Detection
+  block:
+    - name: Check if running inside a container
+      stat:
+        path: /run/.containerenv
+      register: container_env
+
+    - name: Set host run prefix
+      set_fact:
+        host_run: "{{ 'flatpak-spawn --host ' if container_env.stat.exists else '' }}"
+
 - name: Check earlyoom installation state
-  raw: "rpm-ostree status | grep -q earlyoom"
+  raw: "{{ host_run }}rpm-ostree status | grep -q earlyoom"
   register: earlyoom_check_raw
   failed_when: false
   changed_when: false
 
-- name: Install earlyoom via raw sudo
-  raw: "sudo rpm-ostree install earlyoom --apply-live"
+- name: Install earlyoom via host raw sudo
+  raw: "{{ host_run }}sudo rpm-ostree install earlyoom --apply-live"
   when: "earlyoom_check_raw.rc != 0"
   register: earlyoom_install_raw
   changed_when: "'Added' in earlyoom_install_raw.stdout"
 
-- name: Manage earlyoom service
-  raw: "sudo systemctl enable --now earlyoom"
+- name: Manage earlyoom service on host
+  raw: "{{ host_run }}sudo systemctl enable --now earlyoom"
   register: earlyoom_service_raw
   changed_when: "'Created symlink' in earlyoom_service_raw.stdout or 'started' in earlyoom_service_raw.stdout"
 
