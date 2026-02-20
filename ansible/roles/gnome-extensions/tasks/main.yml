@@ -84,7 +84,11 @@
     - key: "/org/gnome/shell/extensions/just-perfection/animation"
       value: "4"
     - key: "/org/gnome/shell/extensions/just-perfection/workspace-background-corner-size"
-      value: "1"
+      value: "0"
+    - key: "/org/gnome/shell/extensions/just-perfection/panel-corner-size"
+      value: "0"
+    - key: "/org/gnome/shell/extensions/just-perfection/panel-floating"
+      value: "false"
   changed_when: true
     # Panel corner size intentionally left to default (Orchis theme)
 
@@ -109,10 +113,12 @@
       value: "true"
     - key: "/org/gnome/shell/extensions/blur-my-shell/panel/customize"
       value: "true"
-    - key: "/org/gnome/shell/extensions/blur-my-shell/panel/override-background-color"
-      value: "true"
     - key: "/org/gnome/shell/extensions/blur-my-shell/panel/background-color"
       value: "(0.0, 0.0, 0.0, 0.0)"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/panel/override-background-color"
+      value: "false"
+    - key: "/org/gnome/shell/extensions/blur-my-shell/panel/blur"
+      value: "false"
     - key: "/org/gnome/shell/extensions/blur-my-shell/panel/unblur-in-overview"
       value: "false"
   changed_when: true
