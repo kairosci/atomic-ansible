@@ -11,33 +11,31 @@
         - "# Safe Delete Configuration"
         - "alias rm='gio trash 2>/dev/null || /usr/bin/rm'"
         - "alias rp='/usr/bin/rm'"
-- name: Performance Optimization
-  block:
-    - name: Check if earlyoom is installed
-      shell: rpm-ostree status | grep -q earlyoom
-      register: earlyoom_check
-      failed_when: false
-      changed_when: false
+- name: Check if earlyoom is installed
+  shell: "rpm-ostree status | grep -q earlyoom"
+  register: earlyoom_check
+  failed_when: false
+  changed_when: false
 
-    - name: Install earlyoom (Silverblue/Atomic)
-      become: yes
-      shell: rpm-ostree install earlyoom --apply-live
-      when: earlyoom_check.rc != 0
-      register: earlyoom_install
-      changed_when: "'Added' in earlyoom_install.stdout"
+- name: Install earlyoom (Silverblue)
+  shell: "rpm-ostree install earlyoom --apply-live"
+  become: yes
+  when: earlyoom_check.rc != 0
+  register: earlyoom_install
+  changed_when: "'Added' in earlyoom_install.stdout"
 
-    - name: Enable and Start earlyoom
-      become: yes
-      systemd:
-        name: earlyoom
-        enabled: yes
-        state: started
+- name: Manage earlyoom service
+  become: yes
+  systemd:
+    name: earlyoom
+    enabled: yes
+    state: started
 
-    - name: Configure earlyoom thresholds
-      become: yes
-      lineinfile:
-        path: /etc/default/earlyoom
-        regexp: '^EARLYOOM_ARGS='
-        line: 'EARLYOOM_ARGS="-m 5 -s 5 --prefer \"(electron|firefox|chrome|code)\" --avoid \"(gnome-shell|systemd|dbus-daemon)\""'
-        state: present
-      notify: Restart earlyoom
+- name: Configure earlyoom thresholds
+  become: yes
+  lineinfile:
+    path: /etc/default/earlyoom
+    regexp: '^EARLYOOM_ARGS='
+    line: 'EARLYOOM_ARGS="-m 5 -s 5 --prefer \"(electron|firefox|chrome|code)\" --avoid \"(gnome-shell|systemd|dbus-daemon)\""'
+    state: present
+  notify: Restart earlyoom
