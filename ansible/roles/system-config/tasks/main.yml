@@ -11,25 +11,22 @@
         - "# Safe Delete Configuration"
         - "alias rm='gio trash 2>/dev/null || /usr/bin/rm'"
         - "alias rp='/usr/bin/rm'"
-- name: Check if earlyoom is installed
-  shell: "rpm-ostree status | grep -q earlyoom"
-  register: earlyoom_check
+- name: Check earlyoom installation state
+  raw: "rpm-ostree status | grep -q earlyoom"
+  register: earlyoom_check_raw
   failed_when: false
   changed_when: false
 
-- name: Install earlyoom (Silverblue)
-  shell: "rpm-ostree install earlyoom --apply-live"
-  become: yes
-  when: earlyoom_check.rc != 0
-  register: earlyoom_install
-  changed_when: "'Added' in earlyoom_install.stdout"
+- name: Install earlyoom via raw sudo
+  raw: "sudo rpm-ostree install earlyoom --apply-live"
+  when: "earlyoom_check_raw.rc != 0"
+  register: earlyoom_install_raw
+  changed_when: "'Added' in earlyoom_install_raw.stdout"
 
 - name: Manage earlyoom service
-  become: yes
-  systemd:
-    name: earlyoom
-    enabled: yes
-    state: started
+  raw: "sudo systemctl enable --now earlyoom"
+  register: earlyoom_service_raw
+  changed_when: "'Created symlink' in earlyoom_service_raw.stdout or 'started' in earlyoom_service_raw.stdout"
 
 - name: Configure earlyoom thresholds
   become: yes
