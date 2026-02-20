@@ -11,3 +11,25 @@
         - "# Safe Delete Configuration"
         - "alias rm='gio trash 2>/dev/null || /usr/bin/rm'"
         - "alias rp='/usr/bin/rm'"
+- name: Performance Optimization
+  become: yes
+  block:
+    - name: Install earlyoom
+      command: rpm-ostree install earlyoom
+      register: earlyoom_install
+      changed_when: "'Added' in earlyoom_install.stdout"
+      failed_when: false
+
+    - name: Enable and Start earlyoom
+      systemd:
+        name: earlyoom
+        enabled: yes
+        state: started
+
+    - name: Configure earlyoom thresholds
+      lineinfile:
+        path: /etc/default/earlyoom
+        regexp: '^EARLYOOM_ARGS='
+        line: 'EARLYOOM_ARGS="-m 5 -s 5 --prefer \"(electron|firefox|chrome|code)\" --avoid \"(gnome-shell|systemd|dbus-daemon)\""'
+        state: present
+      notify: Restart earlyoom
