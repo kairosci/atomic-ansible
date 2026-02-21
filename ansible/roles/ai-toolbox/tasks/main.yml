@@ -2,7 +2,7 @@
 - name: AI Toolbox Container Management
   block:
     - name: Check if 'ai' container exists
-      shell: "toolbox list --containers | grep -p '\\bai\\b'"
+      shell: "toolbox list --containers | grep -q -w 'ai'"
       register: ai_container_exists
       changed_when: false
       failed_when: false
