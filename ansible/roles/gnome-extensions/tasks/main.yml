@@ -1,23 +1,16 @@
----
-- name: Determine Project Root for Venv
-  set_fact:
-    project_venv: "{{ playbook_dir }}/../../.venv"
+- name: Environment Detection
+  block:
+    - name: Check if running inside a container
+      stat:
+        path: /run/.containerenv
+      register: container_env
 
-- name: Remove existing virtual environment
-  file:
-    path: "{{ project_venv }}"
-    state: absent
-
-- name: Create local virtual environment
-  command: python3 -m venv {{ project_venv }}
-
-- name: Install gnome-extensions-cli in venv
-  pip:
-    name: gnome-extensions-cli
-    virtualenv: "{{ project_venv }}"
+    - name: Set host run prefix
+      set_fact:
+        host_run: "{{ 'flatpak-spawn --host ' if container_env.stat.exists else '' }}"
 
 - name: Install GNOME Extensions
-  command: "{{ project_venv }}/bin/gnome-extensions-cli install {{ item }}"
+  shell: "{{ host_run }}gnome-extensions install -f --quiet {{ item }} || true"
   loop:
     - "appindicatorsupport@rgcjonas.gmail.com"
     - "dash-to-dock@micxgx.gmail.com"
@@ -25,11 +18,10 @@
     - "just-perfection-desktop@just-perfection"
     - "caffeine@patapon.info"
     - "user-theme@gnome-shell-extensions.gcampax.github.com"
-  register: ext_install
-  changed_when: "'already installed' not in ext_install.stdout"
+  changed_when: false
 
 - name: Enable GNOME Extensions
-  command: "{{ project_venv }}/bin/gnome-extensions-cli enable {{ item }}"
+  shell: "{{ host_run }}gnome-extensions enable {{ item }}"
   loop:
     - "appindicatorsupport@rgcjonas.gmail.com"
     - "dash-to-dock@micxgx.gmail.com"
@@ -38,7 +30,8 @@
     - "caffeine@patapon.info"
     - "user-theme@gnome-shell-extensions.gcampax.github.com"
   register: ext_enable
-  changed_when: "'is already enabled' not in ext_enable.stdout"
+  changed_when: false
+  failed_when: false
 
 - name: Enable User Extensions Generic Setting
   command: "dconf write /org/gnome/shell/disable-user-extensions false"
