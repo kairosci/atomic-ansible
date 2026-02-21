@@ -12,7 +12,7 @@ help:
 
 optimize:
 	@echo "Checking earlyoom status on host..."
-	@flatpak-spawn --host rpm-ostree status | grep -q earlyoom || (echo "Installing earlyoom..." && flatpak-spawn --host sudo rpm-ostree install earlyoom --apply-live)
+	@flatpak-spawn --host rpm-ostree status | grep -q earlyoom || (echo "Installing earlyoom..." && flatpak-spawn --host sudo rpm-ostree install earlyoom --apply-live --allow-replacement)
 	@echo "Configuring earlyoom thresholds..."
 	@flatpak-spawn --host sudo sed -i 's/^EARLYOOM_ARGS=.*/EARLYOOM_ARGS="-m 5 -s 5 --prefer \\"(electron|firefox|chrome|code)\\" --avoid \\"(gnome-shell|systemd|dbus-daemon)\\""/' /etc/default/earlyoom
 	@echo "Starting earlyoom service..."
