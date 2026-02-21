@@ -15,7 +15,6 @@
   pip:
     name: gnome-extensions-cli
     virtualenv: "{{ project_venv }}"
-    executable: "{{ project_venv }}/bin/pip"
 
 - name: Install GNOME Extensions
   command: "{{ project_venv }}/bin/gnome-extensions-cli install {{ item }}"

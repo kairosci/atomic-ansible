@@ -1,4 +1,4 @@
-.PHONY: setup silverblue kinoite update reset-home help
+.PHONY: setup silverblue kinoite update reset-home help optimize
 
 # Default target
 help:
