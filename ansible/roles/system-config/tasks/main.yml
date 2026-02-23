@@ -11,3 +11,19 @@
         - "# Safe Delete Configuration"
         - "alias rm='gio trash 2>/dev/null || /usr/bin/rm'"
         - "alias rp='/usr/bin/rm'"
+
+- name: Optimize Performance
+  block:
+    - name: Do not overcommit memory
+      ansible.posix.sysctl:
+        name: vm.overcommit_memory
+        value: '2'
+        state: present
+        reload: yes
+    - name: Set overcommit ratio to 99%
+      ansible.posix.sysctl:
+        name: vm.overcommit_ratio
+        value: '99'
+        state: present
+        reload: yes
+  become: yes
