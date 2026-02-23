@@ -15,6 +15,9 @@ optimize:
 	@flatpak-spawn --host rpm-ostree status | grep -q earlyoom || (echo "Installing earlyoom..." && flatpak-spawn --host sudo rpm-ostree install earlyoom --apply-live --allow-replacement)
 	@echo "Configuring earlyoom thresholds..."
 	@flatpak-spawn --host sudo sed -i 's/^EARLYOOM_ARGS=.*/EARLYOOM_ARGS="-m 5 -s 5 --prefer \\"(electron|firefox|chrome|code)\\" --avoid \\"(gnome-shell|systemd|dbus-daemon)\\""/' /etc/default/earlyoom
+	@echo "Configuring kernel performance parameters (sysctl)..."
+	@flatpak-spawn --host sudo bash -c "echo 'vm.overcommit_memory = 2' > /etc/sysctl.d/99-performance.conf && echo 'vm.overcommit_ratio = 99' >> /etc/sysctl.d/99-performance.conf"
+	@flatpak-spawn --host sudo sysctl --system
 	@echo "Starting earlyoom service..."
 	@flatpak-spawn --host sudo systemctl enable --now earlyoom
 	@flatpak-spawn --host sudo systemctl restart earlyoom
