@@ -1,0 +1,34 @@
+name: PR Template Check
+
+on:
+  pull_request:
+    types: [opened, edited, reopened, synchronize]
+
+jobs:
+  check-template:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Description
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const body = context.payload.pull_request.body;
+
+            if (!body) {
+              core.setFailed('PR description is empty. Please follow the PR template.');
+              return;
+            }
+
+            const requiredHeaders = [
+              '## Summary',
+              '## Key Changes',
+              '## Checklist'
+            ];
+
+            const missingHeaders = requiredHeaders.filter(header => !body.includes(header));
+
+            if (missingHeaders.length > 0) {
+              core.setFailed(`PR description is missing required sections: ${missingHeaders.join(', ')}. Please update it to follow the PR template.`);
+            } else {
+              console.log('PR description follows the template structure.');
+            }
