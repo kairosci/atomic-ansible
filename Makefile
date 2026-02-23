@@ -11,17 +11,17 @@ help:
 	@echo "  make reset-home   - Reset home directory (requires confirm via prompt)"
 
 optimize:
-	@echo "Checking earlyoom status on host..."
-	@flatpak-spawn --host rpm-ostree status | grep -q earlyoom || (echo "Installing earlyoom..." && flatpak-spawn --host sudo rpm-ostree install earlyoom --apply-live --allow-replacement)
-	@echo "Configuring earlyoom thresholds..."
-	@flatpak-spawn --host sudo sed -i 's/^EARLYOOM_ARGS=.*/EARLYOOM_ARGS="-m 5 -s 5 --prefer \\"(electron|firefox|chrome|code)\\" --avoid \\"(gnome-shell|systemd|dbus-daemon)\\""/' /etc/default/earlyoom
-	@echo "Configuring kernel performance parameters (sysctl)..."
-	@flatpak-spawn --host sudo bash -c "echo 'vm.overcommit_memory = 2' > /etc/sysctl.d/99-performance.conf && echo 'vm.overcommit_ratio = 99' >> /etc/sysctl.d/99-performance.conf"
-	@flatpak-spawn --host sudo sysctl --system
-	@echo "Starting earlyoom service..."
-	@flatpak-spawn --host sudo systemctl enable --now earlyoom
-	@flatpak-spawn --host sudo systemctl restart earlyoom
-	@echo "Optimization complete."
+	@echo "Checking environment and earlyoom status..."
+	@RUN_ON_HOST=$$(command -v flatpak-spawn >/dev/null && echo "flatpak-spawn --host" || echo ""); \
+	$$RUN_ON_HOST rpm-ostree status | grep -q earlyoom || (echo "Installing earlyoom..." && $$RUN_ON_HOST sudo rpm-ostree install earlyoom --apply-live --allow-replacement); \
+	$$RUN_ON_HOST sudo sed -i 's/^EARLYOOM_ARGS=.*/EARLYOOM_ARGS="-m 5 -s 5 --prefer \\"(electron|firefox|chrome|code)\\" --avoid \\"(gnome-shell|systemd|dbus-daemon)\\""/' /etc/default/earlyoom; \
+	echo "Configuring kernel performance parameters (sysctl)..."; \
+	$$RUN_ON_HOST sudo bash -c "echo 'vm.overcommit_memory = 2' > /etc/sysctl.d/99-performance.conf && echo 'vm.overcommit_ratio = 99' >> /etc/sysctl.d/99-performance.conf"; \
+	$$RUN_ON_HOST sudo sysctl --system; \
+	echo "Starting earlyoom service..."; \
+	$$RUN_ON_HOST sudo systemctl enable --now earlyoom; \
+	$$RUN_ON_HOST sudo systemctl restart earlyoom; \
+	echo "Optimization complete."
 
 setup:
 	@DISTRO=$$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"'); \
