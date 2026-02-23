@@ -4,3 +4,7 @@
   systemd:
     name: earlyoom
     state: restarted
+
+- name: reload sysctl
+  become: yes
+  command: sysctl --system

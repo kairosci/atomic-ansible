@@ -14,16 +14,12 @@
 
 - name: Optimize Performance
   block:
-    - name: Do not overcommit memory
-      ansible.posix.sysctl:
-        name: vm.overcommit_memory
-        value: '2'
-        state: present
-        reload: yes
-    - name: Set overcommit ratio to 99%
-      ansible.posix.sysctl:
-        name: vm.overcommit_ratio
-        value: '99'
-        state: present
-        reload: yes
-  become: yes
+    - name: Configure kernel performance parameters
+      ansible.builtin.copy:
+        dest: /etc/sysctl.d/99-performance.conf
+        content: |
+          vm.overcommit_memory = 2
+          vm.overcommit_ratio = 99
+        mode: '0644'
+      notify: reload sysctl
+  become: true
