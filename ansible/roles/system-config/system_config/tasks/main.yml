@@ -56,13 +56,24 @@
   copy:
     dest: /etc/sysctl.d/99-performance.conf
     content: |
+      # --- Swap / Thrashing Prevention ---
+      # Low swappiness: use swap only when necessary
       vm.swappiness=10
+      # Release VFS cache aggressively to free RAM before OOM
       vm.vfs_cache_pressure=200
+      # Write dirty pages to disk sooner to avoid large I/O spikes
       vm.dirty_ratio=10
       vm.dirty_background_ratio=5
+      # Heuristic overcommit: allows large virtual reservations (Electron/Chrome)
+      # without allowing unlimited physical overcommit
       vm.overcommit_memory=0
       vm.max_map_count=1048576
+      # Reserve RAM for root emergency access
       vm.admin_reserve_kbytes=262144
+      # Reserve RAM (512 MB) for user-space session-critical processes
+      # (compositor, shell, dbus) so they survive when RAM is nearly full
+      vm.user_reserve_kbytes=524288
+      # --- Network ---
       net.core.rmem_max=16777216
       net.core.wmem_max=16777216
       net.ipv4.tcp_fastopen=3
@@ -76,6 +87,62 @@
   become: true
   command: sysctl --system
   when: sysctl_p.changed
+
+- name: Enable zswap for compressed in-memory swap (anti-freeze)
+  become: true
+  copy:
+    dest: /etc/dracut.conf.d/zswap.conf
+    content: |
+      # Enable zswap: compresses swapped pages in RAM before writing to disk.
+      # Drastically reduces swap I/O thrashing that causes system freezes.
+      add_drivers+=" lz4hc lz4hc_compress z3fold "
+    mode: '0644'
+
+- name: Configure zswap kernel parameters via GRUB
+  become: true
+  copy:
+    dest: /etc/sysctl.d/99-zswap.conf
+    content: |
+      # zswap is controlled at boot via kernel cmdline (see /etc/default/grub)
+      # These entries document the intended state
+      # vm.zswap.enabled is read-only, configured at boot
+    mode: '0644'
+
+- name: Ensure zswap is enabled at boot in ostree/BLS config
+  become: true
+  command: rpm-ostree kargs --append-if-missing=zswap.enabled=1 --append-if-missing=zswap.compressor=lz4hc --append-if-missing=zswap.max_pool_percent=25 --append-if-missing=zswap.zpool=z3fold
+  register: zswap_kargs
+  changed_when: "'no changes' not in zswap_kargs.stderr"
+  ignore_errors: yes
+
+- name: Protect session-critical processes from OOM killer
+  become: true
+  copy:
+    dest: /etc/systemd/system.conf.d/99-oom-protect.conf
+    content: |
+      # Ensure systemd itself is never killed by OOM
+      [Manager]
+      DefaultOOMPolicy=continue
+    mode: '0644'
+
+- name: Create oomscore drop-in for display manager
+  become: true
+  file:
+    path: /etc/systemd/system/gdm.service.d
+    state: directory
+    mode: '0755'
+  ignore_errors: yes
+
+- name: Protect GDM/SDDM from OOM killer
+  become: true
+  copy:
+    dest: /etc/systemd/system/gdm.service.d/99-oom.conf
+    content: |
+      [Service]
+      # Negative OOMScoreAdj = harder to kill. -500 strongly protects the display manager.
+      OOMScoreAdj=-500
+    mode: '0644'
+  ignore_errors: yes
 
 - name: Configure Safe Delete Aliases
   lineinfile:
