@@ -86,8 +86,6 @@
       add_drivers+=" lz4hc lz4hc_compress z3fold "
     mode: '0644'
 
-
-
 - name: Ensure zswap is enabled at boot in ostree/BLS config
   become: true
   command: rpm-ostree kargs --append-if-missing=zswap.enabled=1 --append-if-missing=zswap.compressor=lz4hc --append-if-missing=zswap.max_pool_percent=25 --append-if-missing=zswap.zpool=z3fold
@@ -121,6 +119,85 @@
       OOMScoreAdj=-500
     mode: '0644'
   ignore_errors: yes
+
+- name: Apply Freeze Prevention (sysctl)
+  become: true
+  copy:
+    dest: /etc/sysctl.d/99-freeze-prevention.conf
+    content: |
+      kernel.sysrq=1
+      kernel.nmi_watchdog=1
+      kernel.hung_task_timeout_secs=120
+      kernel.panic=30
+      kernel.panic_on_oops=1
+    mode: '0644'
+  register: sysctl_freeze
+
+- name: Reload sysctl after freeze prevention config
+  become: true
+  command: sysctl --system
+  when: sysctl_freeze.changed
+
+- name: Configure systemd-oomd thresholds
+  become: true
+  copy:
+    dest: /etc/systemd/oomd.conf
+    content: |
+      [OOM]
+      SwapUsedLimit=80%
+      DefaultMemoryPressureLimit=60%
+      DefaultMemoryPressureDurationSec=10s
+    mode: '0644'
+  register: oomd_conf
+
+- name: Enable and start systemd-oomd
+  become: true
+  systemd:
+    name: systemd-oomd.service
+    enabled: yes
+    state: started
+    daemon_reload: yes
+
+- name: Create user slice drop-in directory
+  become: true
+  file:
+    path: /etc/systemd/system/user-.slice.d
+    state: directory
+    mode: '0755'
+
+- name: Set user session memory pressure monitoring
+  become: true
+  copy:
+    dest: /etc/systemd/system/user-.slice.d/99-oomd.conf
+    content: |
+      [Slice]
+      ManagedOOMMemoryPressure=kill
+      ManagedOOMMemoryPressureLimit=60%
+    mode: '0644'
+  register: slice_conf
+
+- name: Create user service drop-in directory
+  become: true
+  file:
+    path: /etc/systemd/system/user@.service.d
+    state: directory
+    mode: '0755'
+
+- name: Set memory ceiling on user sessions
+  become: true
+  copy:
+    dest: /etc/systemd/system/user@.service.d/99-memory-limit.conf
+    content: |
+      [Service]
+      ManagedOOMMemoryPressure=kill
+      ManagedOOMMemoryPressureLimit=60%
+    mode: '0644'
+
+- name: Reload systemd after slice/oomd changes
+  become: true
+  systemd:
+    daemon_reload: yes
+  when: slice_conf.changed or oomd_conf.changed
 
 - name: Configure Safe Delete Aliases
   lineinfile:
