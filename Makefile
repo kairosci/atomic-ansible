@@ -16,7 +16,7 @@ optimize:
 	$$RUN_ON_HOST rpm-ostree status | grep -q earlyoom || (echo "Installing earlyoom..." && $$RUN_ON_HOST sudo rpm-ostree install earlyoom --apply-live --allow-replacement); \
 	$$RUN_ON_HOST sudo sed -i 's/^EARLYOOM_ARGS=.*/EARLYOOM_ARGS="-m 5 -s 5 --prefer \\"(electron|firefox|chrome|code)\\" --avoid \\"(gnome-shell|systemd|dbus-daemon)\\""/' /etc/default/earlyoom; \
 	echo "Configuring kernel performance parameters (sysctl)..."; \
-	$$RUN_ON_HOST sudo bash -c "echo 'vm.overcommit_memory = 2' > /etc/sysctl.d/99-performance.conf && echo 'vm.overcommit_ratio = 99' >> /etc/sysctl.d/99-performance.conf"; \
+	$$RUN_ON_HOST sudo bash -c "echo 'vm.overcommit_memory = 0' > /etc/sysctl.d/99-performance.conf && echo 'vm.max_map_count = 1048576' >> /etc/sysctl.d/99-performance.conf"; \
 	$$RUN_ON_HOST sudo sysctl --system; \
 	echo "Starting earlyoom service..."; \
 	$$RUN_ON_HOST sudo systemctl enable --now earlyoom; \
