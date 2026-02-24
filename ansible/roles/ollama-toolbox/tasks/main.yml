@@ -1,0 +1,44 @@
+- name: Ollama Toolbox Container Management
+  block:
+    - name: Check if 'ollama' container exists
+      shell: "toolbox list --containers | grep -q -w 'ollama'"
+      register: ollama_container_exists
+      changed_when: false
+      failed_when: false
+
+    - name: Create 'ollama' container
+      command: "toolbox create -y ollama"
+      when: ollama_container_exists.rc != 0
+
+    - name: Check if Ollama is installed in 'ollama' container
+      shell: "toolbox run --container ollama command -v ollama"
+      register: ollama_installed
+      changed_when: false
+      failed_when: false
+
+    - name: Install Ollama in 'ollama' container
+      shell: "toolbox run --container ollama sh -c 'curl -fsSL https://ollama.com/install.sh | sh'"
+      when: ollama_installed.rc != 0
+      changed_when: true
+
+    - name: Ensure Ollama server is running
+      shell: "toolbox run --container ollama sh -c 'nohup ollama serve > /dev/null 2>&1 &'"
+      changed_when: false
+
+    - name: Wait for Ollama server to be ready
+      shell: "toolbox run --container ollama ollama list"
+      register: ollama_ready
+      until: ollama_ready.rc == 0
+      retries: 5
+      delay: 2
+      changed_when: false
+
+    - name: Pull lightweight model (phi3)
+      shell: "toolbox run --container ollama ollama pull phi3"
+      register: model_pull
+      changed_when: "'pulling' in model_pull.stdout"
+
+    - name: Stop Ollama server after pull
+      shell: "toolbox run --container ollama pkill ollama"
+      changed_when: false
+      failed_when: false

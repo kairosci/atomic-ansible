@@ -8,6 +8,7 @@ help:
 	@echo "  make kinoite      - Run Kinoite desktop configuration"
 	@echo "  make update       - System update and cleanup"
 	@echo "  make optimize     - Install and configure earlyoom for performance (requires host sudo)"
+	@echo "  make ollama       - Setup Ollama toolbox container for local AI"
 	@echo "  make reset-home   - Reset home directory (requires confirm via prompt)"
 
 optimize:
@@ -22,6 +23,9 @@ optimize:
 	$$RUN_ON_HOST sudo systemctl enable --now earlyoom; \
 	$$RUN_ON_HOST sudo systemctl restart earlyoom; \
 	echo "Optimization complete."
+
+ollama:
+	ansible-playbook ansible/playbooks/ollama.yml $(VERBOSE)
 
 setup:
 	@DISTRO=$$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"'); \
