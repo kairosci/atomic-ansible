@@ -78,20 +78,53 @@
   command: sysctl --system
   when: sysctl_p.changed
 
-- name: Enable zswap for compressed in-memory swap (anti-freeze)
+- name: Enable zswap/zram for compressed in-memory swap (anti-freeze)
   become: true
-  copy:
-    dest: /etc/dracut.conf.d/zswap.conf
-    content: |
-      add_drivers+=" lz4hc lz4hc_compress z3fold "
-    mode: '0644'
+  block:
+    - name: Configure zswap drivers
+      copy:
+        dest: /etc/dracut.conf.d/zswap.conf
+        content: |
+          add_drivers+=" lz4 lz4_compress z3fold "
+        mode: '0644'
 
-- name: Ensure zswap is enabled at boot in ostree/BLS config
-  become: true
-  command: rpm-ostree kargs --append-if-missing=zswap.enabled=1 --append-if-missing=zswap.compressor=lz4hc --append-if-missing=zswap.max_pool_percent=25 --append-if-missing=zswap.zpool=z3fold
-  register: zswap_kargs
-  changed_when: "'no changes' not in zswap_kargs.stderr"
-  ignore_errors: yes
+    - name: Configure zram-generator
+      copy:
+        dest: /etc/systemd/zram-generator.conf
+        content: |
+          [zram0]
+          zram-size = ram / 2
+          compression-algorithm = lz4
+          swap-priority = 100
+          fs-type = swap
+        mode: '0644'
+      register: zram_conf
+
+    - name: Enable and start zram-generator service
+      systemd:
+        name: systemd-zram-setup@zram0.service
+        enabled: yes
+        state: started
+      when: zram_conf.changed
+
+    - name: Hardened Freeze Prevention (Kernel Arguments)
+      become: true
+      command: >
+        rpm-ostree kargs
+        --append-if-missing=zswap.enabled=1
+        --delete=zswap.compressor=lz4hc
+        --append-if-missing=zswap.compressor=lz4
+        --delete=zswap.max_pool_percent=25
+        --append-if-missing=zswap.max_pool_percent=40
+        --append-if-missing=zswap.zpool=z3fold
+        --append-if-missing=preempt=full
+        --append-if-missing=workqueue.watchdog=1
+        --append-if-missing=amdgpu.lockup_timeout=1000
+        --append-if-missing=nvidia.NvReg_ResmanDebugLevel=3
+        --append-if-missing=i915.enable_hangcheck=1
+      register: zswap_kargs
+      changed_when: "'no changes' not in zswap_kargs.stderr"
+      ignore_errors: yes
 
 - name: Protect session-critical processes from OOM killer
   become: true
@@ -127,11 +160,32 @@
     content: |
       kernel.sysrq=1
       kernel.nmi_watchdog=1
+      kernel.watchdog_thresh=10
       kernel.hung_task_timeout_secs=120
       kernel.panic=30
       kernel.panic_on_oops=1
+      kernel.softlockup_panic=1
     mode: '0644'
   register: sysctl_freeze
+
+- name: Enable Hardware Watchdog modules
+  become: true
+  copy:
+    dest: /etc/modules-load.d/watchdog.conf
+    content: |
+      # Intel TCO watchdog
+      iTCO_wdt
+      # AMD SP5100 TCO watchdog
+      sp5100_tco
+    mode: '0644'
+
+- name: Enable Compositor Watchdog (KWin)
+  become: true
+  lineinfile:
+    path: /etc/environment
+    line: "KWIN_WATCHDOG=1"
+    create: yes
+    state: present
 
 - name: Reload sysctl after freeze prevention config
   become: true
