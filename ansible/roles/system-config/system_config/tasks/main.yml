@@ -60,9 +60,10 @@
       vm.vfs_cache_pressure=200
       vm.dirty_ratio=10
       vm.dirty_background_ratio=5
-      vm.overcommit_memory=2
-      vm.overcommit_ratio=50
+      vm.overcommit_memory=0
+      vm.max_map_count=1048576
       vm.admin_reserve_kbytes=262144
+      vm.user_reserve_kbytes=524288
       net.core.rmem_max=16777216
       net.core.wmem_max=16777216
       net.ipv4.tcp_fastopen=3
@@ -76,6 +77,50 @@
   become: true
   command: sysctl --system
   when: sysctl_p.changed
+
+- name: Enable zswap for compressed in-memory swap (anti-freeze)
+  become: true
+  copy:
+    dest: /etc/dracut.conf.d/zswap.conf
+    content: |
+      add_drivers+=" lz4hc lz4hc_compress z3fold "
+    mode: '0644'
+
+
+
+- name: Ensure zswap is enabled at boot in ostree/BLS config
+  become: true
+  command: rpm-ostree kargs --append-if-missing=zswap.enabled=1 --append-if-missing=zswap.compressor=lz4hc --append-if-missing=zswap.max_pool_percent=25 --append-if-missing=zswap.zpool=z3fold
+  register: zswap_kargs
+  changed_when: "'no changes' not in zswap_kargs.stderr"
+  ignore_errors: yes
+
+- name: Protect session-critical processes from OOM killer
+  become: true
+  copy:
+    dest: /etc/systemd/system.conf.d/99-oom-protect.conf
+    content: |
+      [Manager]
+      DefaultOOMPolicy=continue
+    mode: '0644'
+
+- name: Create oomscore drop-in for display manager
+  become: true
+  file:
+    path: /etc/systemd/system/gdm.service.d
+    state: directory
+    mode: '0755'
+  ignore_errors: yes
+
+- name: Protect GDM/SDDM from OOM killer
+  become: true
+  copy:
+    dest: /etc/systemd/system/gdm.service.d/99-oom.conf
+    content: |
+      [Service]
+      OOMScoreAdj=-500
+    mode: '0644'
+  ignore_errors: yes
 
 - name: Configure Safe Delete Aliases
   lineinfile:
