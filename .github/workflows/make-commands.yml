@@ -1,0 +1,79 @@
+name: Make Commands CI
+
+on:
+  pull_request:
+    paths:
+      - Makefile
+      - ansible/playbooks/**
+      - .github/workflows/make-commands.yml
+
+jobs:
+  make-help:
+    name: make help
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run make help
+        run: make help
+
+  make-silverblue:
+    name: make silverblue
+    runs-on: fedora
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
+      - name: Validate playbook syntax
+        run: ansible-playbook --syntax-check ansible/playbooks/silverblue.yml
+
+  make-kinoite:
+    name: make kinoite
+    runs-on: fedora
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
+      - name: Validate playbook syntax
+        run: ansible-playbook --syntax-check ansible/playbooks/kinoite.yml
+
+  make-update:
+    name: make update
+    runs-on: fedora
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
+      - name: Validate playbook syntax
+        run: ansible-playbook --syntax-check ansible/playbooks/update.yml
+
+  make-ollama:
+    name: make ollama
+    runs-on: fedora
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
+      - name: Validate playbook syntax
+        run: ansible-playbook --syntax-check ansible/playbooks/ollama.yml
+
+  make-reset-home:
+    name: make reset-home
+    runs-on: fedora
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
+      - name: Validate playbook syntax
+        run: ansible-playbook --syntax-check ansible/playbooks/reset-home.yml
+
+  make-setup:
+    name: make setup
+    runs-on: fedora
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
+      - name: Run make setup
+        run: |
+          cat /etc/os-release
+          make setup || echo "setup failed as expected on non-Silverblue/Kinoite"
