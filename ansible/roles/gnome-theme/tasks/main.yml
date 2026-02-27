@@ -1,4 +1,30 @@
 ---
+- name: Install Inter Font
+  block:
+    - name: Check if Inter font is already installed
+      stat:
+        path: "{{ ansible_user_dir }}/.local/share/fonts/Inter"
+      register: inter_font_exists
+
+    - name: Create fonts directory
+      file:
+        path: "{{ ansible_user_dir }}/.local/share/fonts"
+        state: directory
+        mode: '0755'
+      when: not inter_font_exists.stat.exists
+
+    - name: Download Inter font
+      unarchive:
+        src: "https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip"
+        dest: "{{ ansible_user_dir }}/.local/share/fonts/Inter"
+        remote_src: yes
+        creates: "{{ ansible_user_dir }}/.local/share/fonts/Inter"
+      when: not inter_font_exists.stat.exists
+
+    - name: Update font cache
+      command: fc-cache -f "{{ ansible_user_dir }}/.local/share/fonts"
+      when: not inter_font_exists.stat.exists
+
 - name: Install Orchis theme
   block:
     - name: Clone Orchis theme repository
@@ -14,6 +40,22 @@
         chdir: "/tmp/orchis-theme"
       register: install_theme
       changed_when: "'Installed' in install_theme.stdout"
+
+- name: Clean unused Orchis variants
+  block:
+    - name: Find and remove unused Orchis variants
+      shell: |
+        for dir in ~/.themes ~/.local/share/themes; do
+          [[ -d "$dir" ]] || continue
+          find "$dir" -maxdepth 1 -type d -name "Orchis*" | while read -r theme_path; do
+            theme_name="$(basename "$theme_path")"
+            if [[ "$theme_name" != "Orchis-Dark" ]]; then
+              rm -rf "$theme_path"
+            fi
+          done
+        done
+      register: clean_variants
+      changed_when: clean_variants.stdout | length > 0
 
 - name: Configure GNOME Interface
   command: "dconf write {{ item.key }} \"{{ item.value }}\""
@@ -38,6 +80,10 @@
       value: "true"
     - key: "/org/gnome/mutter/center-new-windows"
       value: "true"
+    - key: "/org/gnome/desktop/interface/cursor-theme"
+      value: "''"
+    - key: "/org/gnome/desktop/sound/theme-name"
+      value: "''"
   changed_when: true
 
 - name: Flatpak Overrides
