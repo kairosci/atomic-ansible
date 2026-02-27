@@ -43,22 +43,25 @@
   failed_when: false
   changed_when: true
 
-- name: Configure dynamic sysctl for performance
+- name: Configure dynamic sysctl for performance with OOM prevention
   copy:
     dest: /etc/sysctl.d/99-performance.conf
     content: |
-      vm.swappiness=100
-      vm.vfs_cache_pressure=50
-      vm.dirty_ratio=15
+      vm.swappiness=10
+      vm.vfs_cache_pressure=200
+      vm.dirty_ratio=10
       vm.dirty_background_ratio=5
+      vm.overcommit_memory=0
+      vm.overcommit_ratio=50
+      vm.max_map_count=1048576
+      vm.admin_reserve_kbytes=262144
+      vm.user_reserve_kbytes=524288
       net.core.rmem_max=16777216
       net.core.wmem_max=16777216
       net.ipv4.tcp_fastopen=3
       net.ipv4.tcp_congestion_control=bbr
       net.core.default_qdisc=cake
       fs.file-max=2097152
-      vm.overcommit_memory=1
-      vm.overcommit_ratio=50
     mode: '0644'
 
 - name: Apply sysctl settings
@@ -188,6 +191,137 @@
         regexp: "^CPU_ENERGY_PERF_POLICY_ON_BAT="
         line: 'CPU_ENERGY_PERF_POLICY_ON_BAT="power"'
       when: tlp_check.rc == 0
+      failed_when: false
+      changed_when: true
+
+- name: Enable zswap/zram for freeze prevention
+  block:
+    - name: Configure zram-generator
+      copy:
+        dest: /etc/systemd/zram-generator.conf
+        content: |
+          [zram0]
+          zram-size = ram / 2
+          compression-algorithm = lz4
+          swap-priority = 100
+          fs-type = swap
+        mode: '0644'
+      register: zram_conf
+      failed_when: false
+      changed_when: true
+
+    - name: Enable and start zram-generator service
+      systemd:
+        name: systemd-zram-setup@zram0.service
+        enabled: yes
+        state: started
+      when: zram_conf.changed
+      failed_when: false
+      changed_when: true
+
+- name: Apply freeze prevention sysctl
+  copy:
+    dest: /etc/sysctl.d/99-freeze-prevention.conf
+    content: |
+      kernel.sysrq=1
+      kernel.nmi_watchdog=1
+      kernel.watchdog_thresh=10
+      kernel.hung_task_timeout_secs=120
+      kernel.panic=30
+      kernel.panic_on_oops=1
+      kernel.softlockup_panic=1
+    mode: '0644'
+  register: sysctl_freeze
+  failed_when: false
+  changed_when: true
+
+- name: Reload sysctl after freeze prevention config
+  command: sysctl --system
+  when: sysctl_freeze.changed
+  failed_when: false
+  changed_when: true
+
+- name: Enable Hardware Watchdog modules
+  copy:
+    dest: /etc/modules-load.d/watchdog.conf
+    content: |
+      iTCO_wdt
+      sp5100_tco
+    mode: '0644'
+  failed_when: false
+  changed_when: true
+
+- name: Configure systemd-oomd
+  block:
+    - name: Configure systemd-oomd thresholds
+      copy:
+        dest: /etc/systemd/oomd.conf
+        content: |
+          [OOM]
+          SwapUsedLimit=80%
+          DefaultMemoryPressureLimit=60%
+          DefaultMemoryPressureDurationSec=10s
+        mode: '0644'
+      register: oomd_conf
+      failed_when: false
+      changed_when: true
+
+    - name: Enable and start systemd-oomd
+      systemd:
+        name: systemd-oomd.service
+        enabled: yes
+        state: started
+        daemon_reload: yes
+      failed_when: false
+      changed_when: true
+
+    - name: Set user session memory pressure monitoring
+      copy:
+        dest: /etc/systemd/system/user-.slice.d/99-oomd.conf
+        content: |
+          [Slice]
+          ManagedOOMMemoryPressure=kill
+          ManagedOOMMemoryPressureLimit=60%
+        mode: '0644'
+      register: slice_conf
+      failed_when: false
+      changed_when: true
+
+    - name: Set memory ceiling on user sessions
+      copy:
+        dest: /etc/systemd/system/user@.service.d/99-memory-limit.conf
+        content: |
+          [Service]
+          ManagedOOMMemoryPressure=kill
+          ManagedOOMMemoryPressureLimit=60%
+        mode: '0644'
+      failed_when: false
+      changed_when: true
+
+    - name: Reload systemd after slice/oomd changes
+      systemd:
+        daemon_reload: yes
+      when: slice_conf.changed or oomd_conf.changed
+      failed_when: false
+      changed_when: true
+
+- name: Protect display manager from OOM killer
+  block:
+    - name: Create oomscore drop-in for display manager
+      file:
+        path: /etc/systemd/system/gdm.service.d
+        state: directory
+        mode: '0755'
+      failed_when: false
+      changed_when: true
+
+    - name: Protect GDM from OOM killer
+      copy:
+        dest: /etc/systemd/system/gdm.service.d/99-oom.conf
+        content: |
+          [Service]
+          OOMScoreAdj=-500
+        mode: '0644'
       failed_when: false
       changed_when: true
 
