@@ -21,7 +21,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+        run: |
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
       - name: Validate playbook syntax
         run: ansible-playbook --syntax-check ansible/playbooks/silverblue.yml
 
@@ -33,7 +35,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+        run: |
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
       - name: Validate playbook syntax
         run: ansible-playbook --syntax-check ansible/playbooks/kinoite.yml
 
@@ -45,7 +49,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+        run: |
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
       - name: Validate playbook syntax
         run: ansible-playbook --syntax-check ansible/playbooks/update.yml
 
@@ -57,7 +63,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+        run: |
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
       - name: Validate playbook syntax
         run: ansible-playbook --syntax-check ansible/playbooks/ollama.yml
 
@@ -69,7 +77,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+        run: |
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
       - name: Validate playbook syntax
         run: ansible-playbook --syntax-check ansible/playbooks/reset-home.yml
 
@@ -81,6 +91,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+        run: |
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
       - name: Run make setup
         run: make setup || echo "Setup detection may vary"
