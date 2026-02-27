@@ -2,7 +2,10 @@ name: Make Commands CI
 
 on:
   pull_request:
-  push:
+    paths:
+      - Makefile
+      - ansible/playbooks/**
+      - .github/workflows/make-commands.yml
 
 jobs:
   make-help:
