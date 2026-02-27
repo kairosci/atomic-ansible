@@ -114,3 +114,22 @@
     - key: "/org/gnome/shell/extensions/blur-my-shell/panel/unblur-in-overview"
       value: "false"
   changed_when: true
+
+- name: Install Extension Manager for CLI tools
+  flatpak:
+    name: com.mattjakeman.ExtensionManager
+    state: present
+    remote: flathub
+    method: user
+
+- name: Install gnome-extensions-cli
+  pip:
+    name: gnome-extensions-cli
+    user: yes
+
+- name: Remove Extension Manager after setup
+  flatpak:
+    name: com.mattjakeman.ExtensionManager
+    state: absent
+    remote: flathub
+    method: user

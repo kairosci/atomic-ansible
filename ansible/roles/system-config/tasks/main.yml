@@ -1,4 +1,157 @@
 ---
+- name: Disable unnecessary services
+  systemd:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  loop:
+    - cups.service
+    - cups-browsed.service
+    - avahi-daemon.service
+    - avahi-daemon.socket
+    - ModemManager.service
+  failed_when: false
+  changed_when: true
+
+- name: Mask unnecessary services
+  systemd:
+    name: "{{ item }}"
+    masked: yes
+  loop:
+    - geoclue.service
+    - tracker-miner-fs-3.service
+    - tracker-extract-3.service
+  failed_when: false
+  changed_when: true
+
+- name: Configure sysctl for performance
+  copy:
+    dest: /etc/sysctl.d/99-performance.conf
+    content: |
+      vm.swappiness=100
+      vm.vfs_cache_pressure=50
+      vm.dirty_ratio=15
+      vm.dirty_background_ratio=5
+      net.core.rmem_max=16777216
+      net.core.wmem_max=16777216
+      net.ipv4.tcp_fastopen=3
+      net.ipv4.tcp_congestion_control=bbr
+      net.core.default_qdisc=cake
+      fs.file-max=2097152
+    mode: '0644'
+
+- name: Apply sysctl settings
+  command: sysctl --system
+  changed_when: true
+  failed_when: false
+
+- name: Configure CPU governor
+  block:
+    - name: Check if cpupower is available
+      command: which cpupower
+      register: cpupower_check
+      changed_when: false
+      failed_when: false
+
+    - name: Set CPU governor to performance via cpupower
+      command: cpupower frequency-set -g performance
+      when: cpupower_check.rc == 0
+      changed_when: true
+      failed_when: false
+
+    - name: Set CPU governor manually if cpupower unavailable
+      shell: |
+        for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+          [[ -w "$cpu" ]] && echo "performance" > "$cpu"
+        done
+      when: cpupower_check.rc != 0
+      changed_when: true
+      failed_when: false
+
+- name: Configure I/O scheduler
+  block:
+    - name: Apply BFQ scheduler to block devices
+      shell: |
+        for dev in /sys/block/sd* /sys/block/nvme*n*; do
+          [[ -w "$dev/queue/scheduler" ]] || continue
+          if grep -q "bfq" "$dev/queue/scheduler" 2>/dev/null; then
+            echo "bfq" > "$dev/queue/scheduler"
+          elif grep -q "mq-deadline" "$dev/queue/scheduler" 2>/dev/null; then
+            echo "mq-deadline" > "$dev/queue/scheduler"
+          fi
+        done
+      changed_when: true
+      failed_when: false
+
+    - name: Create udev rules for I/O scheduler
+      copy:
+        dest: /etc/udev/rules.d/60-io-scheduler.rules
+        content: |
+          ACTION=="add|change", KERNEL=="nvme[0-9]*n[0-9]*", ATTR{queue/scheduler}="bfq"
+          ACTION=="add|change", KERNEL=="sd[a-z]*", ATTR{queue/scheduler}="bfq"
+        mode: '0644'
+      changed_when: true
+      failed_when: false
+
+    - name: Reload udev rules
+      command: udevadm control --reload-rules
+      changed_when: true
+      failed_when: false
+
+- name: Configure TLP
+  block:
+    - name: Check if TLP is installed
+      command: which tlp
+      register: tlp_check
+      changed_when: false
+      failed_when: false
+
+    - name: Enable and start TLP
+      systemd:
+        name: tlp.service
+        enabled: yes
+        state: started
+      when: tlp_check.rc == 0
+      changed_when: true
+      failed_when: false
+
+    - name: Mask rfkill services for TLP
+      systemd:
+        name: "{{ item }}"
+        masked: yes
+      loop:
+        - systemd-rfkill.service
+        - systemd-rfkill.socket
+      when: tlp_check.rc == 0
+      failed_when: false
+      changed_when: true
+
+    - name: Configure TLP CPU governor
+      lineinfile:
+        path: /etc/tlp.conf
+        regexp: "^CPU_SCALING_GOVERNOR_ON_AC="
+        line: 'CPU_SCALING_GOVERNOR_ON_AC="performance"'
+      when: tlp_check.rc == 0
+      failed_when: false
+      changed_when: true
+
+    - name: Configure TLP energy policy
+      lineinfile:
+        path: /etc/tlp.conf
+        regexp: "^CPU_ENERGY_PERF_POLICY_ON_AC="
+        line: 'CPU_ENERGY_PERF_POLICY_ON_AC="performance"'
+      when: tlp_check.rc == 0
+      failed_when: false
+      changed_when: true
+
+- name: Disable GNOME Software autostart
+  lineinfile:
+    path: /etc/xdg/autostart/org.gnome.Software.desktop
+    line: "Hidden=true"
+    create: yes
+  failed_when: false
+  changed_when: true
+
 - name: Optimize User Environment
   block:
     - name: Configure Safe Delete Aliases

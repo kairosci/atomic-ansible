@@ -5,3 +5,22 @@
     state: present
     flatpakrepo_url: https://flathub.org/repo/flathub.flatpakrepo
     method: user
+
+- name: System Cleanup
+  block:
+    - name: Check if running on atomic distro
+      command: which rpm-ostree
+      register: rpm_ostree_check
+      changed_when: false
+      failed_when: false
+
+    - name: Clean journal logs
+      command: journalctl --vacuum-files=0
+      changed_when: true
+      failed_when: false
+
+    - name: Clean rpm-ostree cache and rollback
+      command: rpm-ostree cleanup --base --rollback -m
+      changed_when: true
+      failed_when: false
+      when: rpm_ostree_check.rc == 0
