@@ -1,4 +1,23 @@
 ---
+- name: Gather system information for dynamic optimization
+  block:
+    - name: Get total memory in KB
+      command: cat /proc/meminfo | grep MemTotal | awk '{print $2}'
+      register: mem_total_kb
+      changed_when: false
+      failed_when: false
+
+    - name: Get memory in GB
+      set_fact:
+        mem_total_gb: "{{ (mem_total_kb.stdout | int / 1024 / 1024) | round | int }}"
+
+    - name: Check if running on laptop (has battery)
+      stat:
+        path: /sys/class/power_supply/BAT0
+      register: battery_check
+      changed_when: false
+      failed_when: false
+
 - name: Disable unnecessary services
   systemd:
     name: "{{ item }}"
@@ -24,7 +43,7 @@
   failed_when: false
   changed_when: true
 
-- name: Configure sysctl for performance
+- name: Configure dynamic sysctl for performance
   copy:
     dest: /etc/sysctl.d/99-performance.conf
     content: |
@@ -38,6 +57,8 @@
       net.ipv4.tcp_congestion_control=bbr
       net.core.default_qdisc=cake
       fs.file-max=2097152
+      vm.overcommit_memory=1
+      vm.overcommit_ratio=50
     mode: '0644'
 
 - name: Apply sysctl settings
@@ -98,7 +119,7 @@
       changed_when: true
       failed_when: false
 
-- name: Configure TLP
+- name: Configure TLP dynamically based on system type
   block:
     - name: Check if TLP is installed
       command: which tlp
@@ -106,12 +127,20 @@
       changed_when: false
       failed_when: false
 
-    - name: Enable and start TLP
+    - name: Enable and start TLP (for laptops)
       systemd:
         name: tlp.service
         enabled: yes
         state: started
-      when: tlp_check.rc == 0
+      when: tlp_check.rc == 0 and battery_check.stat.exists
+      changed_when: true
+      failed_when: false
+
+    - name: Enable TLP on AC only for desktops
+      systemd:
+        name: tlp.service
+        enabled: yes
+      when: tlp_check.rc == 0 and not battery_check.stat.exists
       changed_when: true
       failed_when: false
 
@@ -126,7 +155,7 @@
       failed_when: false
       changed_when: true
 
-    - name: Configure TLP CPU governor
+    - name: Configure TLP CPU governor for AC power
       lineinfile:
         path: /etc/tlp.conf
         regexp: "^CPU_SCALING_GOVERNOR_ON_AC="
@@ -135,11 +164,29 @@
       failed_when: false
       changed_when: true
 
-    - name: Configure TLP energy policy
+    - name: Configure TLP CPU governor for battery
+      lineinfile:
+        path: /etc/tlp.conf
+        regexp: "^CPU_SCALING_GOVERNOR_ON_BAT="
+        line: 'CPU_SCALING_GOVERNOR_ON_BAT="powersave"'
+      when: tlp_check.rc == 0
+      failed_when: false
+      changed_when: true
+
+    - name: Configure TLP energy policy for AC
       lineinfile:
         path: /etc/tlp.conf
         regexp: "^CPU_ENERGY_PERF_POLICY_ON_AC="
         line: 'CPU_ENERGY_PERF_POLICY_ON_AC="performance"'
+      when: tlp_check.rc == 0
+      failed_when: false
+      changed_when: true
+
+    - name: Configure TLP energy policy for battery
+      lineinfile:
+        path: /etc/tlp.conf
+        regexp: "^CPU_ENERGY_PERF_POLICY_ON_BAT="
+        line: 'CPU_ENERGY_PERF_POLICY_ON_BAT="power"'
       when: tlp_check.rc == 0
       failed_when: false
       changed_when: true
