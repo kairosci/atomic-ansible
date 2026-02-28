@@ -27,11 +27,11 @@
     - name: Download OMZ installer
       get_url:
         url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
-        dest: /tmp/install-omz.sh
+        dest: /tmp/install-omz-{{ ansible_user_id }}.sh
         mode: '0755'
 
     - name: Run OMZ installer (unattended)
-      command: /tmp/install-omz.sh --unattended
+      command: /tmp/install-omz-{{ ansible_user_id }}.sh --unattended
       args:
         creates: "{{ ansible_user_dir }}/.oh-my-zsh"
       register: omz_install
