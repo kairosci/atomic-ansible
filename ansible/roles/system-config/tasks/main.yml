@@ -2,7 +2,7 @@
 - name: Gather system information for dynamic optimization
   block:
     - name: Get total memory in KB
-      command: cat /proc/meminfo | grep MemTotal | awk '{print $2}'
+      shell: cat /proc/meminfo | grep MemTotal | awk '{print $2}'
       register: mem_total_kb
       changed_when: false
       failed_when: false
