@@ -25,7 +25,7 @@ optimize:
 	echo "Optimization complete."
 
 ollama:
-	ansible-playbook ansible/playbooks/ollama.yml $(VERBOSE)
+	ansible-playbook ansible/playbooks/ollama.yml -K $(VERBOSE)
 
 setup:
 	@DISTRO=$$(grep ^ID= /etc/os-release | cut -d= -f2 | tr -d '"'); \
@@ -43,18 +43,18 @@ setup:
 	fi
 
 silverblue:
-	ansible-playbook ansible/playbooks/silverblue.yml $(VERBOSE)
+	ansible-playbook ansible/playbooks/silverblue.yml -K $(VERBOSE)
 
 kinoite:
-	ansible-playbook ansible/playbooks/kinoite.yml $(VERBOSE)
+	ansible-playbook ansible/playbooks/kinoite.yml -K $(VERBOSE)
 
 update:
-	ansible-playbook ansible/playbooks/update.yml $(VERBOSE)
+	ansible-playbook ansible/playbooks/update.yml -K $(VERBOSE)
 
 reset-home:
 	@read -p "Are you sure you want to reset home? (y/N) " confirm; \
 	if [ "$$confirm" = "y" ]; then \
-		ansible-playbook ansible/playbooks/reset-home.yml -e "confirm=yes" $(VERBOSE); \
+		ansible-playbook ansible/playbooks/reset-home.yml -e "confirm=yes" -K $(VERBOSE); \
 	else \
 		echo "Aborted."; \
 	fi
