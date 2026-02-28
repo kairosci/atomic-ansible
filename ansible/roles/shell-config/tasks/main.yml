@@ -9,7 +9,7 @@
 
     - name: Install Zsh and util-linux-user (Atomic)
       become: yes
-      command: rpm-ostree install -y zsh util-linux-user
+      command: rpm-ostree install --idempotent --apply-live -y zsh util-linux-user
       when: rpm_ostree_check.rc == 0
       register: rpm_install
       changed_when: "'Added:' in rpm_install.stdout"
