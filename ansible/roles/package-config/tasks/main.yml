@@ -9,10 +9,9 @@
 - name: System Cleanup
   block:
     - name: Check if running on atomic distro
-      command: which rpm-ostree
+      stat:
+        path: /usr/bin/rpm-ostree
       register: rpm_ostree_check
-      changed_when: false
-      failed_when: false
 
     - name: Clean journal logs
       command: journalctl --vacuum-files=0
@@ -23,4 +22,4 @@
       command: rpm-ostree cleanup --base --rollback -m
       changed_when: true
       failed_when: false
-      when: rpm_ostree_check.rc == 0
+      when: rpm_ostree_check.stat.exists

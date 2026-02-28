@@ -1,15 +1,14 @@
 - name: Install Toolbox
   block:
     - name: Check if running on atomic distro (rpm-ostree)
-      command: which rpm-ostree
+      stat:
+        path: /usr/bin/rpm-ostree
       register: rpm_ostree_check
-      changed_when: false
-      failed_when: false
 
     - name: Install Toolbox (Atomic)
       become: yes
       command: rpm-ostree install --idempotent --apply-live -y toolbox
-      when: rpm_ostree_check.rc == 0
+      when: rpm_ostree_check.stat.exists
       register: rpm_install
       changed_when: "'Added:' in rpm_install.stdout"
       failed_when: false
@@ -19,7 +18,7 @@
       dnf:
         name: toolbox
         state: present
-      when: rpm_ostree_check.rc != 0
+      when: not rpm_ostree_check.stat.exists
 
 - name: Ollama Toolbox Container Management
   block:
