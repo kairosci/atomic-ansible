@@ -18,62 +18,84 @@ jobs:
 
   make-silverblue:
     name: make silverblue
-    runs-on: fedora
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:41
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
+        run: |
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
       - name: Validate playbook syntax
         run: ansible-playbook --syntax-check ansible/playbooks/silverblue.yml
 
   make-kinoite:
     name: make kinoite
-    runs-on: fedora
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:41
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
+        run: |
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
       - name: Validate playbook syntax
         run: ansible-playbook --syntax-check ansible/playbooks/kinoite.yml
 
   make-update:
     name: make update
-    runs-on: fedora
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:41
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
+        run: |
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
       - name: Validate playbook syntax
         run: ansible-playbook --syntax-check ansible/playbooks/update.yml
 
   make-ollama:
     name: make ollama
-    runs-on: fedora
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:41
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
+        run: |
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
       - name: Validate playbook syntax
         run: ansible-playbook --syntax-check ansible/playbooks/ollama.yml
 
   make-reset-home:
     name: make reset-home
-    runs-on: fedora
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:41
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
+        run: |
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
       - name: Validate playbook syntax
         run: ansible-playbook --syntax-check ansible/playbooks/reset-home.yml
 
   make-setup:
     name: make setup
-    runs-on: fedora
+    runs-on: ubuntu-latest
+    container:
+      image: fedora:41
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo dnf install -y rpm-ostree ansible-core flatpak toolbox
-      - name: Run make setup
         run: |
-          cat /etc/os-release
-          make setup || echo "setup failed as expected on non-Silverblue/Kinoite"
+          dnf install -y ansible-core rpm-ostree flatpak toolbox python3
+          ansible-galaxy collection install community.general
+      - name: Run make setup
+        run: make setup || echo "Setup detection may vary"
