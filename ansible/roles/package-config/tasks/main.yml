@@ -23,3 +23,49 @@
       changed_when: true
       failed_when: false
       when: rpm_ostree_check.stat.exists
+
+- name: Third-Party Repositories
+  block:
+    - name: Check if Brave repository exists
+      stat:
+        path: /etc/yum.repos.d/brave-browser.repo
+      register: brave_repo
+
+    - name: Add Brave repository
+      shell: curl -fsS https://dl.brave.com/install.sh | sh
+      when: not brave_repo.stat.exists
+      changed_when: true
+
+- name: Base Package Management (Atomic)
+  block:
+    - name: Remove base packages (Atomic)
+      become: yes
+      command: "rpm-ostree override remove {{ item }}"
+      loop: "{{ base_rpms_to_remove | default([]) }}"
+      register: rpm_remove
+      changed_when: "'Removed:' in rpm_remove.stdout"
+      failed_when: false
+
+    - name: Install additional packages (Atomic)
+      become: yes
+      command: "rpm-ostree install --idempotent --apply-live -y {{ base_rpms_to_install | join(' ') }}"
+      when: base_rpms_to_install is defined and base_rpms_to_install | length > 0
+      register: rpm_install
+      changed_when: "'Added:' in rpm_install.stdout"
+      failed_when: false
+  when: rpm_ostree_check.stat.exists
+
+- name: Base Package Management (Standard Fedora)
+  block:
+    - name: Remove base packages (Standard Fedora)
+      become: yes
+      dnf:
+        name: "{{ base_rpms_to_remove | default([]) }}"
+        state: absent
+
+    - name: Install additional packages (Standard Fedora)
+      become: yes
+      dnf:
+        name: "{{ base_rpms_to_install | default([]) }}"
+        state: present
+  when: not rpm_ostree_check.stat.exists
