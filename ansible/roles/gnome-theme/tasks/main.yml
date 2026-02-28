@@ -13,12 +13,19 @@
         mode: '0755'
       when: not inter_font_exists.stat.exists
 
+    - name: Create Inter font directory
+      file:
+        path: "{{ ansible_user_dir }}/.local/share/fonts/Inter"
+        state: directory
+        mode: '0755'
+      when: not inter_font_exists.stat.exists
+
     - name: Download Inter font
       unarchive:
         src: "https://github.com/rsms/inter/releases/download/v4.0/Inter-4.0.zip"
         dest: "{{ ansible_user_dir }}/.local/share/fonts/Inter"
         remote_src: yes
-        creates: "{{ ansible_user_dir }}/.local/share/fonts/Inter"
+        creates: "{{ ansible_user_dir }}/.local/share/fonts/Inter/Inter.ttc"
       when: not inter_font_exists.stat.exists
 
     - name: Update font cache
