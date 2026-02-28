@@ -3,12 +3,14 @@
 A powerful, **root-less** configuration management system for **Fedora Silverblue** (GNOME) and **Fedora Kinoite** (KDE), powered by Ansible.
 
 > [!IMPORTANT]
-> **v3.0 is a complete rewrite.** We have migrated from shell scripts to a pure Ansible architecture. The system now runs entirely as a local user, requiring zero `sudo` privileges for configuration.
+> **v3.0 is a complete rewrite.** We have migrated from bash scripts to a modular Ansible architecture. While user-space configs (dotfiles, themes, flatpaks) run without `sudo`, base OS modifications (like removing RPM bloatware and installing Virtualization tools) will prompt for your password via Ansible's `become`.
 
 ## Key Features
 
 - **Zero-Sudo Architecture**: All configurations happen in the user space (dotfiles, themes, fonts, Flatpaks).
 - **Automatic Multi-Distro Support**: Detects if you are on Silverblue or Kinoite and applies the correct environment.
+- **Bloatware Removal**: Systematically removes default GNOME or KDE RPMs/Flatpaks to give you a pristine base system.
+- **Virtualization & Development**: Installs `libvirt`, `qemu-kvm`, and sets up the Brave repository automatically.
 - **Minimalist CLI**: Optimized output using the `unixy` callback for a clean, distraction-free experience.
 - **Toolbox Sync**: Automatically synchronizes your host theme, icons, and fonts to all your Toolbox containers.
 - **Safe Maintenance**: Integrated Flatpak updates and home directory reset utilities.
