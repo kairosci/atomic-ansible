@@ -7,20 +7,21 @@
       changed_when: false
       failed_when: false
 
-    - name: Install Zsh and util-linux-user (Atomic)
+    - name: Install Zsh, util-linux-user and git (Atomic)
       become: yes
-      command: rpm-ostree install --idempotent --apply-live -y zsh util-linux-user
+      command: rpm-ostree install --idempotent --apply-live -y zsh util-linux-user git
       when: rpm_ostree_check.rc == 0
       register: rpm_install
       changed_when: "'Added:' in rpm_install.stdout"
       failed_when: false
 
-    - name: Install Zsh and util-linux-user (Standard Fedora)
+    - name: Install Zsh, util-linux-user and git (Standard Fedora)
       become: yes
       dnf:
         name:
           - zsh
           - util-linux-user
+          - git
         state: present
       when: rpm_ostree_check.rc != 0
 
