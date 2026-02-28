@@ -25,10 +25,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          dnf install -y ansible rpm-ostree flatpak toolbox python3
+          dnf install -y ansible rpm-ostree flatpak toolbox python3 unzip sudo
           ansible-galaxy collection install community.general
       - name: Validate playbook syntax
-        run: ansible-playbook --syntax-check ansible/playbooks/silverblue.yml
+        run: sudo ansible-playbook --syntax-check ansible/playbooks/silverblue.yml
+      - name: Execute playbook
+        run: sudo ansible-playbook ansible/playbooks/silverblue.yml
 
   make-kinoite:
     name: make kinoite
@@ -39,10 +41,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          dnf install -y ansible rpm-ostree flatpak toolbox python3
+          dnf install -y ansible rpm-ostree flatpak toolbox python3 unzip sudo
           ansible-galaxy collection install community.general
       - name: Validate playbook syntax
-        run: ansible-playbook --syntax-check ansible/playbooks/kinoite.yml
+        run: sudo ansible-playbook --syntax-check ansible/playbooks/kinoite.yml
+      - name: Execute playbook
+        run: sudo ansible-playbook ansible/playbooks/kinoite.yml
 
   make-update:
     name: make update
@@ -53,10 +57,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          dnf install -y ansible rpm-ostree flatpak toolbox python3
+          dnf install -y ansible rpm-ostree flatpak toolbox python3 unzip sudo
           ansible-galaxy collection install community.general
       - name: Validate playbook syntax
-        run: ansible-playbook --syntax-check ansible/playbooks/update.yml
+        run: sudo ansible-playbook --syntax-check ansible/playbooks/update.yml
+      - name: Execute playbook
+        run: sudo ansible-playbook ansible/playbooks/update.yml
 
   make-ollama:
     name: make ollama
@@ -67,10 +73,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          dnf install -y ansible rpm-ostree flatpak toolbox python3
+          dnf install -y ansible rpm-ostree flatpak toolbox python3 unzip sudo
           ansible-galaxy collection install community.general
       - name: Validate playbook syntax
-        run: ansible-playbook --syntax-check ansible/playbooks/ollama.yml
+        run: sudo ansible-playbook --syntax-check ansible/playbooks/ollama.yml
+      - name: Execute playbook
+        run: sudo ansible-playbook ansible/playbooks/ollama.yml
 
   make-reset-home:
     name: make reset-home
@@ -81,10 +89,12 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          dnf install -y ansible rpm-ostree flatpak toolbox python3
+          dnf install -y ansible rpm-ostree flatpak toolbox python3 unzip sudo
           ansible-galaxy collection install community.general
       - name: Validate playbook syntax
-        run: ansible-playbook --syntax-check ansible/playbooks/reset-home.yml
+        run: sudo ansible-playbook --syntax-check ansible/playbooks/reset-home.yml
+      - name: Execute playbook
+        run: sudo ansible-playbook ansible/playbooks/reset-home.yml -e "confirm=yes"
 
   make-setup:
     name: make setup
@@ -95,7 +105,7 @@ jobs:
       - uses: actions/checkout@v4
       - name: Install dependencies
         run: |
-          dnf install -y ansible rpm-ostree flatpak toolbox python3
+          dnf install -y ansible rpm-ostree flatpak toolbox python3 unzip sudo
           ansible-galaxy collection install community.general
       - name: Run make setup
         run: make setup || echo "Setup detection may vary"
