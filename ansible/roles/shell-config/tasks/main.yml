@@ -1,6 +1,29 @@
 ---
 - name: Install Oh My Zsh
   block:
+    - name: Check if running on atomic distro (rpm-ostree)
+      command: which rpm-ostree
+      register: rpm_ostree_check
+      changed_when: false
+      failed_when: false
+
+    - name: Install Zsh and util-linux-user (Atomic)
+      become: yes
+      command: rpm-ostree install -y zsh util-linux-user
+      when: rpm_ostree_check.rc == 0
+      register: rpm_install
+      changed_when: "'Added:' in rpm_install.stdout"
+      failed_when: false
+
+    - name: Install Zsh and util-linux-user (Standard Fedora)
+      become: yes
+      dnf:
+        name:
+          - zsh
+          - util-linux-user
+        state: present
+      when: rpm_ostree_check.rc != 0
+
     - name: Download OMZ installer
       get_url:
         url: https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh
