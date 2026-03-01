@@ -125,7 +125,8 @@
 - name: Install gnome-extensions-cli
   pip:
     name: gnome-extensions-cli
-    user: yes
+    extra_args: --user
+    break_system_packages: yes
 
 - name: Remove Extension Manager after setup
   flatpak:
