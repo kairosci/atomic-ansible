@@ -35,6 +35,7 @@
       - papirus-icon-theme
       - sassc
       - gtk-murrine-engine
+      - python3-pip
     flatpaks_to_remove:
       - org.fedoraproject.Platform.GL.default
       - org.gnome.Contacts
