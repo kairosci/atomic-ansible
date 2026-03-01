@@ -9,19 +9,21 @@
       set_fact:
         host_run: "{{ 'flatpak-spawn --host ' if container_env.stat.exists else '' }}"
 
-- name: Install GNOME Extensions
-  shell: "{{ host_run }}gnome-extensions install -f --quiet {{ item }} || true"
-  loop:
-    - "appindicatorsupport@rgcjonas.gmail.com"
-    - "dash-to-dock@micxgx.gmail.com"
-    - "blur-my-shell@aunetx"
-    - "just-perfection-desktop@just-perfection"
-    - "caffeine@patapon.info"
-    - "user-theme@gnome-shell-extensions.gcampax.github.com"
+- name: Download get-pip.py for local pip installation
+  get_url:
+    url: https://bootstrap.pypa.io/get-pip.py
+    dest: /tmp/get-pip.py
+
+- name: Bootstrap pip in user environment
+  command: python3 /tmp/get-pip.py --user --break-system-packages
   changed_when: false
 
-- name: Enable GNOME Extensions
-  shell: "{{ host_run }}gnome-extensions enable {{ item }}"
+- name: Install gnome-extensions-cli (gext)
+  command: "{{ ansible_user_dir }}/.local/bin/pip3 install gnome-extensions-cli --user --break-system-packages"
+  changed_when: true
+
+- name: Install and Enable GNOME Extensions via gext
+  command: "{{ host_run }}{{ ansible_user_dir }}/.local/bin/gext install {{ item }}"
   loop:
     - "appindicatorsupport@rgcjonas.gmail.com"
     - "dash-to-dock@micxgx.gmail.com"
@@ -29,8 +31,7 @@
     - "just-perfection-desktop@just-perfection"
     - "caffeine@patapon.info"
     - "user-theme@gnome-shell-extensions.gcampax.github.com"
-  register: ext_enable
-  changed_when: false
+  changed_when: true
   failed_when: false
 
 - name: Enable User Extensions Generic Setting
@@ -114,21 +115,3 @@
     - key: "/org/gnome/shell/extensions/blur-my-shell/panel/unblur-in-overview"
       value: "false"
   changed_when: true
-
-- name: Install Extension Manager for CLI tools
-  flatpak:
-    name: com.mattjakeman.ExtensionManager
-    state: present
-    remote: flathub
-    method: user
-
-- name: Install gnome-extensions-cli
-  command: python3 -m pip install gnome-extensions-cli --user --break-system-packages
-  changed_when: true
-
-- name: Remove Extension Manager after setup
-  flatpak:
-    name: com.mattjakeman.ExtensionManager
-    state: absent
-    remote: flathub
-    method: user
