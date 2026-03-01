@@ -25,11 +25,7 @@
 - name: Install and Enable GNOME Extensions via gext
   command: "{{ host_run }}{{ ansible_user_dir }}/.local/bin/gext install {{ item }}"
   loop:
-    - "appindicatorsupport@rgcjonas.gmail.com"
-    - "dash-to-dock@micxgx.gmail.com"
     - "blur-my-shell@aunetx"
-    - "just-perfection-desktop@just-perfection"
-    - "caffeine@patapon.info"
     - "user-theme@gnome-shell-extensions.gcampax.github.com"
   changed_when: true
   failed_when: false
@@ -38,52 +34,6 @@
   command: "dconf write /org/gnome/shell/disable-user-extensions false"
   changed_when: true
 
-- name: Configure Dash to Dock
-  command: "dconf write {{ item.key }} \"{{ item.value }}\""
-  loop:
-    - key: "/org/gnome/shell/extensions/dash-to-dock/dock-position"
-      value: "'BOTTOM'"
-    - key: "/org/gnome/shell/extensions/dash-to-dock/dash-max-icon-size"
-      value: "48"
-    - key: "/org/gnome/shell/extensions/dash-to-dock/dock-fixed"
-      value: "false"
-    - key: "/org/gnome/shell/extensions/dash-to-dock/extend-height"
-      value: "false"
-    - key: "/org/gnome/shell/extensions/dash-to-dock/intellihide-mode"
-      value: "'ALL_WINDOWS'"
-    - key: "/org/gnome/shell/extensions/dash-to-dock/autohide-in-fullscreen"
-      value: "true"
-    - key: "/org/gnome/shell/extensions/dash-to-dock/custom-theme-shrink"
-      value: "false"
-    - key: "/org/gnome/shell/extensions/dash-to-dock/transparency-mode"
-      value: "'FIXED'"
-    - key: "/org/gnome/shell/extensions/dash-to-dock/background-opacity"
-      value: "0.2"
-    - key: "/org/gnome/shell/extensions/dash-to-dock/show-trash"
-      value: "false"
-    - key: "/org/gnome/shell/extensions/dash-to-dock/show-mounts"
-      value: "false"
-    - key: "/org/gnome/shell/extensions/dash-to-dock/animation-time"
-      value: "0.25"
-  changed_when: true
-
-- name: Configure Just Perfection
-  command: "dconf write {{ item.key }} \"{{ item.value }}\""
-  loop:
-    - key: "/org/gnome/shell/extensions/just-perfection/search"
-      value: "false"
-    - key: "/org/gnome/shell/extensions/just-perfection/workspace"
-      value: "true"
-    - key: "/org/gnome/shell/extensions/just-perfection/animation"
-      value: "4"
-    - key: "/org/gnome/shell/extensions/just-perfection/workspace-background-corner-size"
-      value: "0"
-    - key: "/org/gnome/shell/extensions/just-perfection/panel-corner-size"
-      value: "0"
-    - key: "/org/gnome/shell/extensions/just-perfection/panel-floating"
-      value: "false"
-  changed_when: true
-    # Panel corner size intentionally left to default (Orchis theme)
 
 - name: Configure Blur My Shell
   command: "dconf write {{ item.key }} \"{{ item.value }}\""
