@@ -39,6 +39,9 @@ make kinoite
 | Command | Description |
 |---------|-------------|
 | `make setup` | Detects distro and applies full configuration |
+| `make silverblue` | Runs only the GNOME/Silverblue playbook |
+| `make kinoite` | Runs only the KDE/Kinoite playbook |
+| `make ollama` | Prompts to install the Ollama Toolbox container |
 | `make update` | Updates user-level Flatpaks and cleans up |
 | `make reset-home` | Resets dotfiles (with confirmation) |
 | `make VERBOSE="-v"` | Run any command with Ansible verbosity |
