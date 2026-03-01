@@ -28,6 +28,9 @@
 - name: Optimize GNOME Services
   become: true
   block:
+    - name: Get service facts
+      service_facts:
+
     - name: Disable unnecessary services
       systemd:
         name: "{{ item }}"
@@ -39,6 +42,7 @@
         - avahi-daemon.service
         - avahi-daemon.socket
         - ModemManager.service
+      when: item in ansible_facts.services
       ignore_errors: yes
 
     - name: Mask unnecessary services
@@ -49,6 +53,7 @@
         - geoclue.service
         - tracker-miner-fs-3.service
         - tracker-extract-3.service
+      when: item in ansible_facts.services
       ignore_errors: yes
 
 - name: Apply Kernel Optimizations (sysctl)
