@@ -1,13 +1,13 @@
 # Atomic Ansible (v3.0)
 
-A powerful, **root-less** configuration management system for **Fedora Silverblue** (GNOME) and **Fedora Kinoite** (KDE), powered by Ansible.
+A powerful configuration management system for **Fedora Silverblue** (GNOME) and **Fedora Kinoite** (KDE), powered by Ansible.
 
 > [!IMPORTANT]
 > **v3.0 is a complete rewrite.** We have migrated from bash scripts to a modular Ansible architecture. While user-space configs (dotfiles, themes, flatpaks) run without `sudo`, base OS modifications (like removing RPM bloatware and installing Virtualization tools) will prompt for your password via Ansible's `become`.
 
 ## Key Features
 
-- **Zero-Sudo Architecture**: All configurations happen in the user space (dotfiles, themes, fonts, Flatpaks).
+- **Hybrid Privilege Model**: User-space configurations happen without `sudo`, while OS-level changes securely prompt for authorization.
 - **Automatic Multi-Distro Support**: Detects if you are on Silverblue or Kinoite and applies the correct environment.
 - **Bloatware Removal**: Systematically removes default GNOME or KDE RPMs/Flatpaks to give you a pristine base system.
 - **Virtualization & Development**: Installs `libvirt`, `qemu-kvm`, and sets up the Brave repository automatically.
